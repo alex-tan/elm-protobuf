@@ -352,6 +352,27 @@ func oneOfsToCustomTypes(preface []string, messagePb *descriptorpb.DescriptorPro
 	return result
 }
 
+func proto3OptionalType(messagePb *descriptorpb.DescriptorProto, fieldPb *descriptorpb.FieldDescriptorProto) *elm.Type {
+	oneofIndex := -1
+	for i, v := range messagePb.GetOneofDecl() {
+		if v.GetName() == fieldPb.GetTypeName() {
+			oneofIndex = i
+		}
+	}
+	if oneofIndex == -1 {
+		return nil
+	}
+
+	for _, inField := range messagePb.GetField() {
+		if inField.GetProto3Optional() || inField.OneofIndex == nil || inField.GetOneofIndex() != int32(oneofIndex) {
+			continue
+		}
+		v := elm.BasicFieldType(inField)
+		return &v
+	}
+	return nil
+}
+
 func messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p parameters) []pbMessage {
 	var result []pbMessage
 	for _, messagePb := range messagePbs {
@@ -370,24 +391,11 @@ func messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p pa
 			}
 
 			nested := getNestedType(fieldPb, messagePb)
-			if fieldPb.GetProto3Optional() {
-				oneofIndex := -1
-				for i, v := range messagePb.GetOneofDecl() {
-					if v.GetName() == fieldPb.GetTypeName() {
-						oneofIndex = i
-					}
-				}
-
-				basicType := (elm.Type)("unknown")
-				for _, inField := range messagePb.GetField() {
-					if inField.OneofIndex == nil || inField.GetOneofIndex() != int32(oneofIndex) {
-						continue
-					}
-					basicType = elm.BasicFieldType(inField)
-				}
+			proto3OptionalTypeResult := proto3OptionalType(messagePb, fieldPb)
+			if proto3OptionalTypeResult != nil {
 				newFields = append(newFields, elm.TypeAliasField{
 					Name:    elm.FieldName(fieldPb.GetName()),
-					Type:    elm.MaybeType(basicType),
+					Type:    elm.MaybeType(*proto3OptionalTypeResult),
 					Number:  elm.ProtobufFieldNumber(fieldPb.GetNumber()),
 					Encoder: elm.MapEncoder(fieldPb, nested),
 					Decoder: elm.MapDecoder(fieldPb, nested),
