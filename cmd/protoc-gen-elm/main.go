@@ -97,7 +97,10 @@ func main() {
 		log.Printf("Input data: %s", result)
 	}
 
-	resp := &pluginpb.CodeGeneratorResponse{}
+	plugins := (uint64)(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
+	resp := &pluginpb.CodeGeneratorResponse{
+		SupportedFeatures: &plugins,
+	}
 	for _, inFile := range req.GetProtoFile() {
 		log.Printf("Processing file %s", inFile.GetName())
 		// Well Known Types.
