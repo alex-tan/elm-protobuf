@@ -370,7 +370,29 @@ func messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p pa
 			}
 
 			nested := getNestedType(fieldPb, messagePb)
-			if nested != nil {
+			if fieldPb.GetProto3Optional() {
+				oneofIndex := -1
+				for i, v := range messagePb.GetOneofDecl() {
+					if v.GetName() == fieldPb.GetTypeName() {
+						oneofIndex = i
+					}
+				}
+
+				basicType := (elm.Type)("unknown")
+				for _, inField := range messagePb.GetField() {
+					if inField.OneofIndex == nil || inField.GetOneofIndex() != int32(oneofIndex) {
+						continue
+					}
+					basicType = elm.BasicFieldType(inField)
+				}
+				newFields = append(newFields, elm.TypeAliasField{
+					Name:    elm.FieldName(fieldPb.GetName()),
+					Type:    elm.MaybeType(basicType),
+					Number:  elm.ProtobufFieldNumber(fieldPb.GetNumber()),
+					Encoder: elm.MapEncoder(fieldPb, nested),
+					Decoder: elm.MapDecoder(fieldPb, nested),
+				})
+			} else if nested != nil {
 				newFields = append(newFields, elm.TypeAliasField{
 					Name:    elm.FieldName(fieldPb.GetName()),
 					Type:    elm.MapType(nested),
