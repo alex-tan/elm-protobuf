@@ -360,8 +360,10 @@ func proto3OptionalType(messagePb *descriptorpb.DescriptorProto, fieldPb *descri
 		}
 	}
 	if oneofIndex == -1 {
+		fmt.Printf("no optional type found")
 		return nil
 	}
+	fmt.Printf("found optional type for %s", fieldPb.GetTypeName())
 
 	for _, inField := range messagePb.GetField() {
 		if inField.GetProto3Optional() || inField.OneofIndex == nil || inField.GetOneofIndex() != int32(oneofIndex) {
