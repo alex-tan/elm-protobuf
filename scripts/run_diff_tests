@@ -25,6 +25,7 @@ for TEST in "${TEST_ROOT}"/*/; do
         --plugin=protoc-gen-elm="${ELM_PLUGIN}" \
         --elm_out="${OUTPUT_DIR}" \
         --elm_opt=remove-deprecated \
+        --experimental_allow_proto3_optional \
         "${INPUT_DIR}"/*.proto
 
     if ! DIFF_OUTPUT=$(diff -y "${EXPECTED_DIR}" "${OUTPUT_DIR}") ; then
