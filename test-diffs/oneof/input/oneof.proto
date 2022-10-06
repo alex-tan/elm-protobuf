@@ -10,6 +10,13 @@ message Foo {
     bool bool_field = 3;
     string other_string_field = 4;
   }
+
+  optional string synthetic_oneof = 5;
+  optional InnerMessage synthetic_oneof_inner_message = 6;
+}
+
+message InnerMessage {
+  string inner_message_val = 1;
 }
 
 message Foo2 {

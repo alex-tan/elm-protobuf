@@ -321,6 +321,11 @@ func oneOfsToCustomTypes(preface []string, messagePb *descriptorpb.DescriptorPro
 	}
 
 	for oneofIndex, oneOfPb := range messagePb.GetOneofDecl() {
+		syntheticField := syntheticFieldForOneOfIndex(messagePb, (int32)(oneofIndex))
+		if syntheticField != nil {
+			continue
+		}
+
 		var variants []elm.OneOfVariant
 		for _, inField := range messagePb.GetField() {
 			if isDeprecated(inField.Options) && p.RemoveDeprecated {
@@ -352,25 +357,11 @@ func oneOfsToCustomTypes(preface []string, messagePb *descriptorpb.DescriptorPro
 	return result
 }
 
-func proto3OptionalType(messagePb *descriptorpb.DescriptorProto, fieldPb *descriptorpb.FieldDescriptorProto) *elm.Type {
-	oneofIndex := -1
-	for i, v := range messagePb.GetOneofDecl() {
-		if v.GetName() == fieldPb.GetTypeName() {
-			oneofIndex = i
+func syntheticFieldForOneOfIndex(messagePb *descriptorpb.DescriptorProto, oneofIndex int32) *descriptorpb.FieldDescriptorProto {
+	for _, field := range messagePb.GetField() {
+		if field.GetProto3Optional() && field.GetOneofIndex() == int32(oneofIndex) {
+			return field
 		}
-	}
-	if oneofIndex == -1 {
-		fmt.Printf("no optional type found")
-		return nil
-	}
-	fmt.Printf("found optional type for %s", fieldPb.GetTypeName())
-
-	for _, inField := range messagePb.GetField() {
-		if inField.GetProto3Optional() || inField.OneofIndex == nil || inField.GetOneofIndex() != int32(oneofIndex) {
-			continue
-		}
-		v := elm.BasicFieldType(inField)
-		return &v
 	}
 	return nil
 }
@@ -393,16 +384,7 @@ func messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p pa
 			}
 
 			nested := getNestedType(fieldPb, messagePb)
-			proto3OptionalTypeResult := proto3OptionalType(messagePb, fieldPb)
-			if proto3OptionalTypeResult != nil {
-				newFields = append(newFields, elm.TypeAliasField{
-					Name:    elm.FieldName(fieldPb.GetName()),
-					Type:    elm.MaybeType(*proto3OptionalTypeResult),
-					Number:  elm.ProtobufFieldNumber(fieldPb.GetNumber()),
-					Encoder: elm.MapEncoder(fieldPb, nested),
-					Decoder: elm.MapDecoder(fieldPb, nested),
-				})
-			} else if nested != nil {
+			if nested != nil {
 				newFields = append(newFields, elm.TypeAliasField{
 					Name:    elm.FieldName(fieldPb.GetName()),
 					Type:    elm.MapType(nested),
@@ -437,13 +419,23 @@ func messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p pa
 			}
 		}
 
-		for _, oneOfPb := range messagePb.GetOneofDecl() {
-			newFields = append(newFields, elm.TypeAliasField{
-				Name:    elm.FieldName(oneOfPb.GetName()),
-				Type:    elm.OneOfType(oneOfPb.GetName()),
-				Encoder: elm.OneOfEncoder(oneOfPb),
-				Decoder: elm.OneOfDecoder(oneOfPb),
-			})
+		for oneofIndex, oneOfPb := range messagePb.GetOneofDecl() {
+			syntheticField := syntheticFieldForOneOfIndex(messagePb, (int32)(oneofIndex))
+			if syntheticField != nil {
+				newFields = append(newFields, elm.TypeAliasField{
+					Name:    elm.FieldName(syntheticField.GetName()),
+					Type:    elm.MaybeType(elm.BasicFieldType(syntheticField)),
+					Encoder: elm.MaybeEncoder(syntheticField),
+					Decoder: elm.MaybeDecoder(syntheticField),
+				})
+			} else {
+				newFields = append(newFields, elm.TypeAliasField{
+					Name:    elm.FieldName(oneOfPb.GetName()),
+					Type:    elm.OneOfType(oneOfPb.GetName()),
+					Encoder: elm.OneOfEncoder(oneOfPb),
+					Decoder: elm.OneOfDecoder(oneOfPb),
+				})
+			}
 		}
 
 		newPreface := append([]string{messagePb.GetName()}, preface...)

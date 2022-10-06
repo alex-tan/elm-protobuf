@@ -17,6 +17,8 @@ uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 type alias Foo =
     { firstOneof : FirstOneof
     , secondOneof : SecondOneof
+    , syntheticOneof : Maybe String
+    , syntheticOneofInnerMessage : Maybe InnerMessage
     }
 
 
@@ -25,6 +27,8 @@ fooDecoder =
     JD.lazy <| \_ -> decode Foo
         |> field firstOneofDecoder
         |> field secondOneofDecoder
+        |> optional "syntheticOneof" JD.string
+        |> optional "syntheticOneofInnerMessage" innerMessageDecoder
 
 
 fooEncoder : Foo -> JE.Value
@@ -32,6 +36,8 @@ fooEncoder v =
     JE.object <| List.filterMap identity <|
         [ (firstOneofEncoder v.firstOneof)
         , (secondOneofEncoder v.secondOneof)
+        , (optionalEncoder "syntheticOneof" JE.string v.syntheticOneof)
+        , (optionalEncoder "syntheticOneofInnerMessage" innerMessageEncoder v.syntheticOneofInnerMessage)
         ]
 
 
@@ -89,6 +95,24 @@ secondOneofEncoder v =
 
         OtherStringField x ->
             Just ( "otherStringField", JE.string x )
+
+
+type alias InnerMessage =
+    { innerMessageVal : String -- 1
+    }
+
+
+innerMessageDecoder : JD.Decoder InnerMessage
+innerMessageDecoder =
+    JD.lazy <| \_ -> decode InnerMessage
+        |> required "innerMessageVal" JD.string ""
+
+
+innerMessageEncoder : InnerMessage -> JE.Value
+innerMessageEncoder v =
+    JE.object <| List.filterMap identity <|
+        [ (requiredFieldEncoder "innerMessageVal" JE.string "" v.innerMessageVal)
+        ]
 
 
 type alias Foo2 =
