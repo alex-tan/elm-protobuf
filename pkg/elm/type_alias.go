@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/jalandis/elm-protobuf/pkg/stringextras"
+	"github.com/thematthopkins/elm-protobuf/pkg/stringextras"
 
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -92,10 +92,11 @@ var (
 // TypeAlias - defines an Elm type alias (somtimes called a record)
 // https://guide.elm-lang.org/types/type_aliases.html
 type TypeAlias struct {
-	Name    Type
-	Decoder VariableName
-	Encoder VariableName
-	Fields  []TypeAliasField
+	Name      Type
+	LowerName string
+	Decoder   VariableName
+	Encoder   VariableName
+	Fields    []TypeAliasField
 }
 
 // FieldDecoder used in type alias decdoer (ex. )

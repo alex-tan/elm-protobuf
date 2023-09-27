@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+message MyEntity {
+  string id = 1;
+  repeated string my_child_entity_ids = 2;
+}
+
+message MyChildEntity {
+  string id = 1;
+}
+
+message UnreferencedEntity {
+  string id = 1;
+}
+
+message SelfReferencing {
+  string id = 1;
+  string self_referencing_id = 2;
+}
+
+message OverrideName {
+  string id = 1;
+
+  string reference_by_other_name = 2 [(referenced_message) = "MyEntity"];
+  repeated string many_references_by_other_name = 3 [(referenced_message) = "MyEntity"];
+}
+
+message MessageWithoutId {
+  string no_id_here = 1;
+}
