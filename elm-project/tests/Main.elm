@@ -1,5 +1,7 @@
 module Main exposing (suite)
 
+import Dict
+import Empty exposing (..)
 import Expect exposing (..)
 import Fuzz exposing (..)
 import Fuzzer as F
@@ -16,8 +18,6 @@ import String
 import Test exposing (..)
 import Time
 import Wrappers as W
-import Dict
-import Empty exposing (..)
 
 
 suite : Test
@@ -79,7 +79,7 @@ suite =
 
 fuzz : Fuzzer a -> String -> (a -> Expectation) -> Test
 fuzz =
-    fuzzWith { runs = 2000 }
+    fuzzWith { runs = 2000, distribution = noDistribution }
 
 
 encode : (a -> JE.Value) -> a -> String
@@ -476,15 +476,16 @@ wrappersSet =
 
 map : M.MessageWithMaps
 map =
-    { stringToMessages = Dict.fromList
-        [ ( "foo" ,  { field = True } ),
-        ( "bar" ,  { field = False } )
-        ],
-        stringToStrings = Dict.fromList
-        [
-            ("k1", "v1"),
-            ("k2", "v2")
-        ]
+    { stringToMessages =
+        Dict.fromList
+            [ ( "foo", { field = True } )
+            , ( "bar", { field = False } )
+            ]
+    , stringToStrings =
+        Dict.fromList
+            [ ( "k1", "v1" )
+            , ( "k2", "v2" )
+            ]
     }
 
 
