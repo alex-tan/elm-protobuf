@@ -6,8 +6,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/thematthopkins/elm-protobuf/pkg/forwardextensions"
 	"github.com/thematthopkins/elm-protobuf/pkg/stringextras"
 
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
@@ -68,7 +70,13 @@ func ExternalType(inType string) Type {
 	return Type(strings.Join(messageSegments, "_"))
 }
 
-func BasicFieldEncoder(inField *descriptorpb.FieldDescriptorProto) VariableName {
+func BasicFieldEncoder(parentName *string, inField *descriptorpb.FieldDescriptorProto) VariableName {
+	idType := GetIdType(parentName, inField)
+
+	if idType != nil {
+		return (VariableName)(fmt.Sprintf("(\\(%s id) -> JE.string id)", *idType))
+	}
+
 	switch inField.GetType() {
 	case descriptorpb.FieldDescriptorProto_TYPE_INT32,
 		descriptorpb.FieldDescriptorProto_TYPE_UINT32,
@@ -103,7 +111,12 @@ func BasicFieldEncoder(inField *descriptorpb.FieldDescriptorProto) VariableName 
 	}
 }
 
-func BasicFieldDecoder(inField *descriptorpb.FieldDescriptorProto) VariableName {
+func BasicFieldDecoder(parentName *string, inField *descriptorpb.FieldDescriptorProto) VariableName {
+	idType := GetIdType(parentName, inField)
+	if idType != nil {
+		return (VariableName)(fmt.Sprintf("(JD.string |> JD.map %s)", *idType))
+	}
+
 	switch inField.GetType() {
 	case descriptorpb.FieldDescriptorProto_TYPE_INT32,
 		descriptorpb.FieldDescriptorProto_TYPE_INT64,
@@ -137,13 +150,45 @@ func BasicFieldDecoder(inField *descriptorpb.FieldDescriptorProto) VariableName 
 	}
 }
 
-func IdTypeOverride(inField *descriptorpb.FieldDescriptorProto) *IdTypeOverride {
-	for _, option := range inField.Options {
-		option.
+func GetIdTypeOverride(inField *descriptorpb.FieldDescriptorProto) *IdTypeOverride {
+	if !proto.HasExtension(inField.Options, forwardextensions.E_IdTypeOverride) {
+		return nil
 	}
+	idOverrideVal := proto.GetExtension(inField.Options, forwardextensions.E_IdTypeOverride)
+	v := (IdTypeOverride)(idOverrideVal.(string))
+	return &v
 }
 
-func BasicFieldType(inField *descriptorpb.FieldDescriptorProto) Type {
+func GetIdType(parentName *string, inField *descriptorpb.FieldDescriptorProto) *Type {
+	idTypeOverride := GetIdTypeOverride(inField)
+	v := ""
+	name := inField.GetName()
+	if idTypeOverride != nil {
+		v = (string)(*idTypeOverride)
+	} else if strings.HasSuffix(name, "_id") {
+		v = strings.TrimSuffix(name, "_id")
+	} else if strings.HasSuffix(name, "_ids") {
+		v = strings.TrimSuffix(name, "_ids")
+	} else if name == "id" {
+		if parentName == nil {
+			panic("id fields are only supported as top level message fields")
+		}
+		v = *parentName
+	}
+
+	if v == "" {
+		return nil
+	}
+	v = fmt.Sprintf("Ids.%s", stringextras.UpperCamelCase(v))
+	return (*Type)(&v)
+}
+
+func BasicFieldType(parentName *string, inField *descriptorpb.FieldDescriptorProto) Type {
+	t := GetIdType(parentName, inField)
+	if t != nil {
+		return *t
+	}
+
 	switch inField.GetType() {
 	case descriptorpb.FieldDescriptorProto_TYPE_INT32,
 		descriptorpb.FieldDescriptorProto_TYPE_INT64,
@@ -178,7 +223,12 @@ func BasicFieldType(inField *descriptorpb.FieldDescriptorProto) Type {
 
 type DefaultValue string
 
-func BasicFieldDefaultValue(inField *descriptorpb.FieldDescriptorProto) DefaultValue {
+func BasicFieldDefaultValue(parentName *string, inField *descriptorpb.FieldDescriptorProto) DefaultValue {
+	t := GetIdType(parentName, inField)
+	if t != nil {
+		return (DefaultValue)(fmt.Sprintf("(%s \"\")", *t))
+	}
+
 	if inField.GetLabel() == descriptorpb.FieldDescriptorProto_LABEL_REPEATED {
 		return "[]"
 	}

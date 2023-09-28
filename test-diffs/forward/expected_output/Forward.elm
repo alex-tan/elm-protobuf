@@ -15,104 +15,107 @@ uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 
 
 type alias MyEntity =
-    { id : String -- 1
-    , myChildEntityIds : List String -- 2
+    { id : Ids.MyEntity -- 1
+    , myChildEntityIds : List Ids.MyChildEntity -- 2
     }
 
 
 myEntityDecoder : JD.Decoder MyEntity
 myEntityDecoder =
     JD.lazy <| \_ -> decode MyEntity
-        |> required "id" JD.string ""
-        |> repeated "myChildEntityIds" JD.string
+        |> required "id" (JD.string |> JD.map Ids.MyEntity) (Ids.MyEntity "")
+        |> repeated "myChildEntityIds" (JD.string |> JD.map Ids.MyChildEntity)
 
 
 myEntityEncoder : MyEntity -> JE.Value
 myEntityEncoder v =
     JE.object <| List.filterMap identity <|
-        [ (requiredFieldEncoder "id" JE.string "" v.id)
-        , (repeatedFieldEncoder "myChildEntityIds" JE.string v.myChildEntityIds)
+        [ (requiredFieldEncoder "id" (\(Ids.MyEntity id) -> JE.string id) (Ids.MyEntity "") v.id)
+        , (repeatedFieldEncoder "myChildEntityIds" (\(Ids.MyChildEntity id) -> JE.string id) v.myChildEntityIds)
         ]
 
 
 type alias MyChildEntity =
-    { id : String -- 1
+    { id : Ids.MyChildEntity -- 1
     }
 
 
 myChildEntityDecoder : JD.Decoder MyChildEntity
 myChildEntityDecoder =
     JD.lazy <| \_ -> decode MyChildEntity
-        |> required "id" JD.string ""
+        |> required "id" (JD.string |> JD.map Ids.MyChildEntity) (Ids.MyChildEntity "")
 
 
 myChildEntityEncoder : MyChildEntity -> JE.Value
 myChildEntityEncoder v =
     JE.object <| List.filterMap identity <|
-        [ (requiredFieldEncoder "id" JE.string "" v.id)
+        [ (requiredFieldEncoder "id" (\(Ids.MyChildEntity id) -> JE.string id) (Ids.MyChildEntity "") v.id)
         ]
 
 
 type alias UnreferencedEntity =
-    { id : String -- 1
+    { id : Ids.UnreferencedEntity -- 1
     }
 
 
 unreferencedEntityDecoder : JD.Decoder UnreferencedEntity
 unreferencedEntityDecoder =
     JD.lazy <| \_ -> decode UnreferencedEntity
-        |> required "id" JD.string ""
+        |> required "id" (JD.string |> JD.map Ids.UnreferencedEntity) (Ids.UnreferencedEntity "")
 
 
 unreferencedEntityEncoder : UnreferencedEntity -> JE.Value
 unreferencedEntityEncoder v =
     JE.object <| List.filterMap identity <|
-        [ (requiredFieldEncoder "id" JE.string "" v.id)
+        [ (requiredFieldEncoder "id" (\(Ids.UnreferencedEntity id) -> JE.string id) (Ids.UnreferencedEntity "") v.id)
         ]
 
 
 type alias SelfReferencing =
-    { id : String -- 1
-    , selfReferencingId : String -- 2
+    { id : Ids.SelfReferencing -- 1
+    , selfReferencingId : Ids.SelfReferencing -- 2
     }
 
 
 selfReferencingDecoder : JD.Decoder SelfReferencing
 selfReferencingDecoder =
     JD.lazy <| \_ -> decode SelfReferencing
-        |> required "id" JD.string ""
-        |> required "selfReferencingId" JD.string ""
+        |> required "id" (JD.string |> JD.map Ids.SelfReferencing) (Ids.SelfReferencing "")
+        |> required "selfReferencingId" (JD.string |> JD.map Ids.SelfReferencing) (Ids.SelfReferencing "")
 
 
 selfReferencingEncoder : SelfReferencing -> JE.Value
 selfReferencingEncoder v =
     JE.object <| List.filterMap identity <|
-        [ (requiredFieldEncoder "id" JE.string "" v.id)
-        , (requiredFieldEncoder "selfReferencingId" JE.string "" v.selfReferencingId)
+        [ (requiredFieldEncoder "id" (\(Ids.SelfReferencing id) -> JE.string id) (Ids.SelfReferencing "") v.id)
+        , (requiredFieldEncoder "selfReferencingId" (\(Ids.SelfReferencing id) -> JE.string id) (Ids.SelfReferencing "") v.selfReferencingId)
         ]
 
 
 type alias OverrideName =
-    { id : String -- 1
-    , referenceByOtherName : String -- 2
-    , manyReferencesByOtherName : List String -- 3
+    { id : Ids.OverrideName -- 1
+    , referenceByOtherName : Ids.MyEntity -- 3
+    , manyReferencesByOtherName : List Ids.MyEntity -- 4
+    , optionalReferenceByOtherName : Maybe Ids.MyEntity
     }
 
 
 overrideNameDecoder : JD.Decoder OverrideName
 overrideNameDecoder =
     JD.lazy <| \_ -> decode OverrideName
-        |> required "id" JD.string ""
-        |> required "referenceByOtherName" JD.string ""
-        |> repeated "manyReferencesByOtherName" JD.string
+        |> required "id" (JD.string |> JD.map Ids.OverrideName) (Ids.OverrideName "")
+        |> required "referenceByOtherName" (JD.string |> JD.map Ids.MyEntity) (Ids.MyEntity "")
+        |> repeated "manyReferencesByOtherName" (JD.string |> JD.map Ids.MyEntity)
+        |> optional "optionalReferenceByOtherName" (JD.string |> JD.map Ids.MyEntity)
 
 
 overrideNameEncoder : OverrideName -> JE.Value
 overrideNameEncoder v =
     JE.object <| List.filterMap identity <|
-        [ (requiredFieldEncoder "id" JE.string "" v.id)
-        , (requiredFieldEncoder "referenceByOtherName" JE.string "" v.referenceByOtherName)
-        , (repeatedFieldEncoder "manyReferencesByOtherName" JE.string v.manyReferencesByOtherName)
+        [ (requiredFieldEncoder "id" (\(Ids.OverrideName id) -> JE.string id) (Ids.OverrideName "") v.id)
+        , (requiredFieldEncoder "referenceByOtherName" (\(Ids.MyEntity id) -> JE.string id) (Ids.MyEntity "") v.referenceByOtherName)
+        , (repeatedFieldEncoder "manyReferencesByOtherName" (\(Ids.MyEntity id) -> JE.string id) v.manyReferencesByOtherName)
+        , (optionalEncoder "optionalReferenceByOtherName" (\(Ids.MyEntity id) -> JE.string id) v.optionalReferenceByOtherName)
         ]
 
 

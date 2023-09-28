@@ -92,11 +92,12 @@ var (
 // TypeAlias - defines an Elm type alias (somtimes called a record)
 // https://guide.elm-lang.org/types/type_aliases.html
 type TypeAlias struct {
-	Name      Type
-	LowerName string
-	Decoder   VariableName
-	Encoder   VariableName
-	Fields    []TypeAliasField
+	Name        Type
+	IsSingleton bool
+	LowerName   string
+	Decoder     VariableName
+	Encoder     VariableName
+	Fields      []TypeAliasField
 }
 
 // FieldDecoder used in type alias decdoer (ex. )
@@ -115,7 +116,7 @@ type TypeAliasField struct {
 	Number         ProtobufFieldNumber
 	Decoder        FieldDecoder
 	Encoder        FieldEncoder
-	IdTypeOverride IdTypeOverride
+	IdTypeOverride *IdTypeOverride
 }
 
 func appendUnderscoreToReservedKeywords(in string) string {
@@ -136,22 +137,22 @@ func FieldJSONName(pb *descriptorpb.FieldDescriptorProto) VariantJSONName {
 	return VariantJSONName(pb.GetJsonName())
 }
 
-func RequiredFieldEncoder(pb *descriptorpb.FieldDescriptorProto) FieldEncoder {
+func RequiredFieldEncoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldEncoder {
 	return FieldEncoder(fmt.Sprintf(
 		"requiredFieldEncoder \"%s\" %s %s v.%s",
 		FieldJSONName(pb),
-		BasicFieldEncoder(pb),
-		BasicFieldDefaultValue(pb),
+		BasicFieldEncoder(parentName, pb),
+		BasicFieldDefaultValue(parentName, pb),
 		FieldName(pb.GetName()),
 	))
 }
 
-func RequiredFieldDecoder(pb *descriptorpb.FieldDescriptorProto) FieldDecoder {
+func RequiredFieldDecoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldDecoder {
 	return FieldDecoder(fmt.Sprintf(
 		"required \"%s\" %s %s",
 		FieldJSONName(pb),
-		BasicFieldDecoder(pb),
-		BasicFieldDefaultValue(pb),
+		BasicFieldDecoder(parentName, pb),
+		BasicFieldDefaultValue(parentName, pb),
 	))
 }
 
@@ -175,13 +176,12 @@ func MapType(messagePb *descriptorpb.DescriptorProto) Type {
 
 	return Type(fmt.Sprintf(
 		"Dict.Dict %s %s",
-		BasicFieldType(keyField),
-		BasicFieldType(valueField),
+		BasicFieldType(nil, keyField),
+		BasicFieldType(nil, valueField),
 	))
 }
 
-func MapEncoder(
-	fieldPb *descriptorpb.FieldDescriptorProto,
+func MapEncoder(fieldPb *descriptorpb.FieldDescriptorProto,
 	messagePb *descriptorpb.DescriptorProto,
 ) FieldEncoder {
 	valueField := messagePb.GetField()[1]
@@ -189,7 +189,7 @@ func MapEncoder(
 	return FieldEncoder(fmt.Sprintf(
 		"mapEntriesFieldEncoder \"%s\" %s v.%s",
 		FieldJSONName(fieldPb),
-		BasicFieldEncoder(valueField),
+		BasicFieldEncoder(nil, valueField),
 		FieldName(fieldPb.GetName()),
 	))
 }
@@ -203,7 +203,7 @@ func MapDecoder(
 	return FieldDecoder(fmt.Sprintf(
 		"mapEntries \"%s\" %s",
 		FieldJSONName(fieldPb),
-		BasicFieldDecoder(valueField),
+		BasicFieldDecoder(nil, valueField),
 	))
 }
 
@@ -211,20 +211,20 @@ func MaybeType(t Type) Type {
 	return Type(fmt.Sprintf("Maybe %s", t))
 }
 
-func MaybeEncoder(pb *descriptorpb.FieldDescriptorProto) FieldEncoder {
+func MaybeEncoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldEncoder {
 	return FieldEncoder(fmt.Sprintf(
 		"optionalEncoder \"%s\" %s v.%s",
 		FieldJSONName(pb),
-		BasicFieldEncoder(pb),
+		BasicFieldEncoder(parentName, pb),
 		FieldName(pb.GetName()),
 	))
 }
 
-func MaybeDecoder(pb *descriptorpb.FieldDescriptorProto) FieldDecoder {
+func MaybeDecoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldDecoder {
 	return FieldDecoder(fmt.Sprintf(
 		"optional \"%s\" %s",
 		FieldJSONName(pb),
-		BasicFieldDecoder(pb),
+		BasicFieldDecoder(parentName, pb),
 	))
 }
 
@@ -232,20 +232,20 @@ func ListType(t Type) Type {
 	return Type(fmt.Sprintf("List %s", t))
 }
 
-func ListEncoder(pb *descriptorpb.FieldDescriptorProto) FieldEncoder {
+func ListEncoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldEncoder {
 	return FieldEncoder(fmt.Sprintf(
 		"repeatedFieldEncoder \"%s\" %s v.%s",
 		FieldJSONName(pb),
-		BasicFieldEncoder(pb),
+		BasicFieldEncoder(parentName, pb),
 		FieldName(pb.GetName()),
 	))
 }
 
-func ListDecoder(pb *descriptorpb.FieldDescriptorProto) FieldDecoder {
+func ListDecoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldDecoder {
 	return FieldDecoder(fmt.Sprintf(
 		"repeated \"%s\" %s",
 		FieldJSONName(pb),
-		BasicFieldDecoder(pb),
+		BasicFieldDecoder(parentName, pb),
 	))
 }
 

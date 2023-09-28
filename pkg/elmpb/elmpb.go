@@ -18,6 +18,7 @@ import (
 )
 
 var ExcludedFiles = map[string]bool{
+	"forwardextensions.proto":          true,
 	"google/protobuf/timestamp.proto":  true,
 	"google/protobuf/wrappers.proto":   true,
 	"google/protobuf/descriptor.proto": true,

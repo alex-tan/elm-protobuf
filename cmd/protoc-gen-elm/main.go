@@ -13,7 +13,6 @@ import (
 	"github.com/thematthopkins/elm-protobuf/pkg/forwardids"
 	"github.com/thematthopkins/elm-protobuf/pkg/generationparams"
 	"github.com/thematthopkins/elm-protobuf/pkg/parsepb"
-
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -66,6 +65,7 @@ func main() {
 	resp := &pluginpb.CodeGeneratorResponse{
 		SupportedFeatures: &plugins,
 	}
+
 	for _, inFile := range req.GetProtoFile() {
 		log.Printf("Processing file %s", inFile.GetName())
 		// Well Known Types.

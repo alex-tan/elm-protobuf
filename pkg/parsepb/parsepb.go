@@ -3,7 +3,9 @@ package parsepb
 import (
 	"strings"
 
+	"github.com/thematthopkins/elm-protobuf/pkg/forwardextensions"
 	"github.com/thematthopkins/elm-protobuf/pkg/generationparams"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/thematthopkins/elm-protobuf/pkg/elm"
 	"github.com/thematthopkins/elm-protobuf/pkg/stringextras"
@@ -111,9 +113,9 @@ func oneOfsToCustomTypes(preface []string, messagePb *descriptorpb.DescriptorPro
 			variants = append(variants, elm.OneOfVariant{
 				Name:     elm.NestedVariantName(inField.GetName(), preface),
 				JSONName: elm.OneOfVariantJSONName(inField),
-				Type:     elm.BasicFieldType(inField),
-				Decoder:  elm.BasicFieldDecoder(inField),
-				Encoder:  elm.BasicFieldEncoder(inField),
+				Type:     elm.BasicFieldType(nil, inField),
+				Decoder:  elm.BasicFieldDecoder(nil, inField),
+				Encoder:  elm.BasicFieldEncoder(nil, inField),
 			})
 		}
 
@@ -139,8 +141,17 @@ func syntheticFieldForOneOfIndex(messagePb *descriptorpb.DescriptorProto, oneofI
 }
 
 func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p generationparams.Parameters) []PbMessage {
+	//protoregistry.GlobalFiles.RegisterFile((xname)
+	//protoregistry.GlobalFiles.RegisterFile()
+	//protoregistry.GlobalFiles.FindDescriptorByName()
 	var result []PbMessage
+
 	for _, messagePb := range messagePbs {
+		isSingleton := false
+		if proto.HasExtension(messagePb, forwardextensions.E_Singleton) {
+			//isSingleton := true
+			panic("found singleton")
+		}
 		if isDeprecated(messagePb.Options) && p.RemoveDeprecated {
 			continue
 		}
@@ -158,35 +169,39 @@ func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p ge
 			nested := getNestedType(fieldPb, messagePb)
 			if nested != nil {
 				newFields = append(newFields, elm.TypeAliasField{
-					Name:    elm.FieldName(fieldPb.GetName()),
-					Type:    elm.MapType(nested),
-					Number:  elm.ProtobufFieldNumber(fieldPb.GetNumber()),
-					Encoder: elm.MapEncoder(fieldPb, nested),
-					Decoder: elm.MapDecoder(fieldPb, nested),
+					Name:           elm.FieldName(fieldPb.GetName()),
+					IdTypeOverride: elm.GetIdTypeOverride(fieldPb),
+					Type:           elm.MapType(nested),
+					Number:         elm.ProtobufFieldNumber(fieldPb.GetNumber()),
+					Encoder:        elm.MapEncoder(fieldPb, nested),
+					Decoder:        elm.MapDecoder(fieldPb, nested),
 				})
 			} else if isOptional(fieldPb) {
 				newFields = append(newFields, elm.TypeAliasField{
-					Name:    elm.FieldName(fieldPb.GetName()),
-					Type:    elm.MaybeType(elm.BasicFieldType(fieldPb)),
-					Number:  elm.ProtobufFieldNumber(fieldPb.GetNumber()),
-					Encoder: elm.MaybeEncoder(fieldPb),
-					Decoder: elm.MaybeDecoder(fieldPb),
+					Name:           elm.FieldName(fieldPb.GetName()),
+					IdTypeOverride: elm.GetIdTypeOverride(fieldPb),
+					Type:           elm.MaybeType(elm.BasicFieldType(messagePb.Name, fieldPb)),
+					Number:         elm.ProtobufFieldNumber(fieldPb.GetNumber()),
+					Encoder:        elm.MaybeEncoder(messagePb.Name, fieldPb),
+					Decoder:        elm.MaybeDecoder(messagePb.Name, fieldPb),
 				})
 			} else if isRepeated(fieldPb) {
 				newFields = append(newFields, elm.TypeAliasField{
-					Name:    elm.FieldName(fieldPb.GetName()),
-					Type:    elm.ListType(elm.BasicFieldType(fieldPb)),
-					Number:  elm.ProtobufFieldNumber(fieldPb.GetNumber()),
-					Encoder: elm.ListEncoder(fieldPb),
-					Decoder: elm.ListDecoder(fieldPb),
+					Name:           elm.FieldName(fieldPb.GetName()),
+					IdTypeOverride: elm.GetIdTypeOverride(fieldPb),
+					Type:           elm.ListType(elm.BasicFieldType(messagePb.Name, fieldPb)),
+					Number:         elm.ProtobufFieldNumber(fieldPb.GetNumber()),
+					Encoder:        elm.ListEncoder(messagePb.Name, fieldPb),
+					Decoder:        elm.ListDecoder(messagePb.Name, fieldPb),
 				})
 			} else {
 				newFields = append(newFields, elm.TypeAliasField{
-					Name:    elm.FieldName(fieldPb.GetName()),
-					Type:    elm.BasicFieldType(fieldPb),
-					Number:  elm.ProtobufFieldNumber(fieldPb.GetNumber()),
-					Encoder: elm.RequiredFieldEncoder(fieldPb),
-					Decoder: elm.RequiredFieldDecoder(fieldPb),
+					Name:           elm.FieldName(fieldPb.GetName()),
+					IdTypeOverride: elm.GetIdTypeOverride(fieldPb),
+					Type:           elm.BasicFieldType(messagePb.Name, fieldPb),
+					Number:         elm.ProtobufFieldNumber(fieldPb.GetNumber()),
+					Encoder:        elm.RequiredFieldEncoder(messagePb.Name, fieldPb),
+					Decoder:        elm.RequiredFieldDecoder(messagePb.Name, fieldPb),
 				})
 			}
 		}
@@ -196,9 +211,9 @@ func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p ge
 			if syntheticField != nil {
 				newFields = append(newFields, elm.TypeAliasField{
 					Name:    elm.FieldName(syntheticField.GetName()),
-					Type:    elm.MaybeType(elm.BasicFieldType(syntheticField)),
-					Encoder: elm.MaybeEncoder(syntheticField),
-					Decoder: elm.MaybeDecoder(syntheticField),
+					Type:    elm.MaybeType(elm.BasicFieldType(nil, syntheticField)),
+					Encoder: elm.MaybeEncoder(nil, syntheticField),
+					Decoder: elm.MaybeDecoder(nil, syntheticField),
 				})
 			} else {
 				newFields = append(newFields, elm.TypeAliasField{
@@ -214,11 +229,12 @@ func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p ge
 		name := elm.NestedType(messagePb.GetName(), preface)
 		result = append(result, PbMessage{
 			TypeAlias: elm.TypeAlias{
-				Name:      name,
-				LowerName: stringextras.FirstLower((string)(name)),
-				Decoder:   elm.DecoderName(name),
-				Encoder:   elm.EncoderName(name),
-				Fields:    newFields,
+				IsSingleton: isSingleton,
+				Name:        name,
+				LowerName:   stringextras.FirstLower((string)(name)),
+				Decoder:     elm.DecoderName(name),
+				Encoder:     elm.EncoderName(name),
+				Fields:      newFields,
 			},
 			OneOfCustomTypes: oneOfsToCustomTypes([]string{}, messagePb, p),
 			EnumCustomTypes:  EnumsToCustomTypes(newPreface, messagePb.GetEnumType(), p),

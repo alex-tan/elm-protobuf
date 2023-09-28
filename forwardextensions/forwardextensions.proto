@@ -1,0 +1,19 @@
+/*
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
+protoc --go_out=. --proto_path=./forwardextensions forwardextensions.proto
+cp % test-diffs/forward/input/
+*/
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "/pkg/forwardextensions";
+
+extend google.protobuf.FieldOptions {
+  optional string id_type_override = 50001;
+}
+
+extend google.protobuf.MessageOptions {
+  optional bool singleton = 50002;
+}
+
