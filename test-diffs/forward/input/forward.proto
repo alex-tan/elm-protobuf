@@ -1,5 +1,11 @@
 syntax = "proto3";
 
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FieldOptions {
+  optional string id_type_override = 112221;
+}
+
 message MyEntity {
   string id = 1;
   repeated string my_child_entity_ids = 2;
@@ -21,8 +27,9 @@ message SelfReferencing {
 message OverrideName {
   string id = 1;
 
-  string reference_by_other_name = 2 [(referenced_message) = "MyEntity"];
-  repeated string many_references_by_other_name = 3 [(referenced_message) = "MyEntity"];
+  optional optional_reference_by_other_name = 2 [(id_type_override) = "MyEntity"];
+  string reference_by_other_name = 2 [(id_type_override) = "MyEntity"];
+  repeated string many_references_by_other_name = 3 [(id_type_override) = "MyEntity"];
 }
 
 message MessageWithoutId {

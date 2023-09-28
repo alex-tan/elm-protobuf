@@ -137,6 +137,12 @@ func BasicFieldDecoder(inField *descriptorpb.FieldDescriptorProto) VariableName 
 	}
 }
 
+func IdTypeOverride(inField *descriptorpb.FieldDescriptorProto) *IdTypeOverride {
+	for _, option := range inField.Options {
+		option.
+	}
+}
+
 func BasicFieldType(inField *descriptorpb.FieldDescriptorProto) Type {
 	switch inField.GetType() {
 	case descriptorpb.FieldDescriptorProto_TYPE_INT32,

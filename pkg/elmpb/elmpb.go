@@ -18,8 +18,9 @@ import (
 )
 
 var ExcludedFiles = map[string]bool{
-	"google/protobuf/timestamp.proto": true,
-	"google/protobuf/wrappers.proto":  true,
+	"google/protobuf/timestamp.proto":  true,
+	"google/protobuf/wrappers.proto":   true,
+	"google/protobuf/descriptor.proto": true,
 }
 
 func Generate(inFile *descriptorpb.FileDescriptorProto, p generationparams.Parameters) (*pluginpb.CodeGeneratorResponse_File, error) {

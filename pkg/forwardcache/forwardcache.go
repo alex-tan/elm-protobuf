@@ -24,45 +24,25 @@ import ForwardNew.EntrypointCache as EntrypointCache exposing (EntrypointCache)
 import Ids
 import Pb
 
-type alias Cache = {
-{{ range $index, $element := .Messages}}
-	{{if $index}},{{end}}
-	{{$element.TypeAlias.LowerName}} : EntrypointCache Pb.{{$element.TypeAlias.Name}}
-{{end}}
+type alias Cache = { {{ range $index, $element := .CacheDefs}}
+	{{if $index}},{{end}} {{if $element.IsList }} list_ids{{$element.UpperName}} : EntrypointCache (List Ids.{{$element.UpperName}}) {{else}} {{$element.LowerName}} : EntrypointCache Pb.{{$element.UpperName}} {{end}} {{end}}
 }
 
 empty : Cache
-empty =
-{
-{{ range $index, $element := .Messages}}
-	{{if $index}},{{end}}
-	{{$element.TypeAlias.LowerName}} = EntrypointCache.empty
-{{end}}
+empty = { {{ range $index, $element := .CacheDefs}}
+	{{if $index}},{{end}} {{if $element.IsList }}list_ids{{$element.UpperName}}{{else}}{{$element.LowerName}}{{end}} = EntrypointCache.empty {{end}}
 }
 
-importedCarrier : CacheKey Cache Pb.ImportedCarrier
-importedCarrier =
-    cacheKey .importedCarrier (\e c -> { c | importedCarrier = e })
-
-
-list_idsFactoringCompany : CacheKey Cache (List Ids.FactoringCompany)
-list_idsFactoringCompany =
-    cacheKey .list_idsFactoringCompany (\e c -> { c | list_idsFactoringCompany = e })
-
-{{ range .Messages}}
-
-{{.TypeAlias.LowerName}} : CacheKey Cache Pb.{{.TypeAlias.Name}}
-{{.TypeAlias.LowerName}} =
-    cacheKey .{{.TypeAlias.LowerName}} (\e c -> { c | {{.TypeAlias.LowerName}} = e })
-
+{{ range .CacheDefs}}
+{{if .IsList }}
+list_ids{{.UpperName}} : CacheKey Cache (List Ids.{{.UpperName}})
+list_ids{{.UpperName}} =
+    cacheKey .list_ids{{.UpperName}} (\e c -> { c | list_ids{{.UpperName}} = e })
+{{else}}
+{{.LowerName}} : CacheKey Cache Pb.{{.UpperName}}
+{{.LowerName}} =
+    cacheKey .{{.LowerName}} (\e c -> { c | {{.LowerName}} = e })
 {{end}}
-
-{{ range .Messages}}
-
-list_ids{{.TypeAlias.Name}} : CacheKey Cache (List Ids.{{.TypeAlias.Name}})
-list_ids{{.TypeAlias.Name}} =
-    cacheKey .list_ids{{.TypeAlias.Name}} (\e c -> { c | list_ids{{.TypeAlias.Name}} = e })
-
 {{end}}
 `)
 	if err != nil {
@@ -71,13 +51,30 @@ list_ids{{.TypeAlias.Name}} =
 
 	messages_with_ids := parsepb.MessagesWithIds(messages)
 
+	cacheDefs := []CacheDef{}
+	for _, m := range messages_with_ids {
+		cacheDefs = append(cacheDefs, CacheDef{
+			UpperName: (string)(m.TypeAlias.Name),
+			LowerName: m.TypeAlias.LowerName,
+			IsList:    false,
+		})
+	}
+
+	for _, m := range messages_with_ids {
+		cacheDefs = append(cacheDefs, CacheDef{
+			UpperName: (string)(m.TypeAlias.Name),
+			LowerName: m.TypeAlias.LowerName,
+			IsList:    true,
+		})
+	}
+
 	buff := &bytes.Buffer{}
 	if err = t.Execute(buff, struct {
 		SourceFile string
-		Messages   []parsepb.PbMessage
+		CacheDefs  []CacheDef
 	}{
 		SourceFile: inFile.GetName(),
-		Messages:   messages_with_ids,
+		CacheDefs:  cacheDefs,
 	}); err != nil {
 		return nil, err
 	}
@@ -88,4 +85,10 @@ list_ids{{.TypeAlias.Name}} =
 		Name:    &fileName,
 		Content: &result,
 	}, nil
+}
+
+type CacheDef struct {
+	LowerName string
+	UpperName string
+	IsList    bool
 }

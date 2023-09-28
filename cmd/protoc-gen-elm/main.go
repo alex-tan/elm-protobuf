@@ -92,7 +92,7 @@ func main() {
 		if parameters.GenerateForwardGraph {
 			file, err := forwardgraph.Generate(inFile, messages)
 			if err != nil {
-				log.Fatalf("Could not template forwardcache: %v", err)
+				log.Fatalf("Could not template forwardgraph: %v", err)
 			}
 
 			resp.File = append(resp.File, file)
@@ -100,7 +100,7 @@ func main() {
 		if parameters.GenerateForwardIds {
 			file, err := forwardids.Generate(inFile, messages)
 			if err != nil {
-				log.Fatalf("Could not template forwardcache: %v", err)
+				log.Fatalf("Could not template forwardids: %v", err)
 			}
 
 			resp.File = append(resp.File, file)

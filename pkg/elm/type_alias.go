@@ -105,13 +105,17 @@ type FieldDecoder string
 // FieldEncoder used in type alias decdoer (ex. )
 type FieldEncoder string
 
+// Custom attribute to be able to force an id type
+type IdTypeOverride string
+
 // TypeAliasField - type alias field definition
 type TypeAliasField struct {
-	Name    VariableName
-	Type    Type
-	Number  ProtobufFieldNumber
-	Decoder FieldDecoder
-	Encoder FieldEncoder
+	Name           VariableName
+	Type           Type
+	Number         ProtobufFieldNumber
+	Decoder        FieldDecoder
+	Encoder        FieldEncoder
+	IdTypeOverride IdTypeOverride
 }
 
 func appendUnderscoreToReservedKeywords(in string) string {

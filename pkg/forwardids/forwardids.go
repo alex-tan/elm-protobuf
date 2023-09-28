@@ -11,11 +11,8 @@ import (
 func Generate(inFile *descriptorpb.FileDescriptorProto, messages []parsepb.PbMessage) (*pluginpb.CodeGeneratorResponse_File, error) {
 	t := template.New("t")
 
-	t, err := t.Parse(`module Ids exposing (
-    {{ range $index, $element := .Messages}}
-        {{if $index}},{{end}}
-        {{$element.TypeAlias.Name}}
-    {{end}}
+	t, err := t.Parse(`module Ids exposing ({{ range $index, $element := .Messages}}
+        {{if $index}},{{end}} {{$element.TypeAlias.Name}}(..){{end}}
 )
 
 -- DO NOT EDIT
@@ -23,7 +20,7 @@ func Generate(inFile *descriptorpb.FileDescriptorProto, messages []parsepb.PbMes
 -- https://github.com/tiziano88/elm-protobuf
 -- source file: {{ .SourceFile }}
 
-{{ range $index, $element := .Ids}}
+{{ range $index, $element := .Messages}}
 type {{$element.TypeAlias.Name}}
     = {{$element.TypeAlias.Name}} String
 {{end}}

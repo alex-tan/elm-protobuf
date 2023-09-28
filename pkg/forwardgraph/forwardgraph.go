@@ -29,11 +29,8 @@ import LocalExtra.Lookup as LookupExtra
 import Pb
 
 allDecoders : List Lookup.DecoderConfig
-allDecoders = [
-{{ range $index, $element := .Decoders}}
-	{{if $index}},{{end}}
-	{{ $element.LowerName }}
-{{end}}
+allDecoders = [{{ range $index, $element := .Decoders}}
+	{{if $index}},{{end}} Lookup.toDecoderConfig {{ $element.LowerName }} {{end}}
 ]
 
 {{ range .Decoders}}
@@ -89,7 +86,7 @@ func GetDecoders(messages []parsepb.PbMessage) []Decoder {
 		result = append(result, Decoder{
 			UpperName:  (string)(m.TypeAlias.Name),
 			LowerName:  m.TypeAlias.LowerName,
-			Entrypoint: (string)(m.TypeAlias.Name),
+			Entrypoint: (string)(m.TypeAlias.LowerName),
 			Parameters: fmt.Sprintf("LookupExtra.idParam (\\(Ids.%s id) -> id)", m.TypeAlias.Name),
 			Decoder:    fmt.Sprintf("Pb.%s", m.TypeAlias.Decoder),
 			CacheKey:   fmt.Sprintf("Cache.%s", m.TypeAlias.LowerName),
