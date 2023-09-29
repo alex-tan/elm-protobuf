@@ -31,7 +31,7 @@ import {{.MainPackage}}
 
 allDecoders : List Lookup.DecoderConfig
 allDecoders = [{{ range $index, $element := .Decoders}}
-    {{if $index}},{{end}} Lookup.toDecoderConfig {{ $element.LowerName }} {{end}}
+    {{if $index}},{{end}} Lookup.toDecoderConfig {{ $element.Entrypoint }} {{end}}
     ]
 
 {{ range .Decoders}}

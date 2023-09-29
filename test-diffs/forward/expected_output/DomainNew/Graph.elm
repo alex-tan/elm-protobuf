@@ -15,7 +15,7 @@ import MyPackage
 
 allDecoders : List Lookup.DecoderConfig
 allDecoders = [
-     Lookup.toDecoderConfig mySingleton 
+     Lookup.toDecoderConfig mySingletonSingleton 
     , Lookup.toDecoderConfig importedCarrierss 
     , Lookup.toDecoderConfig myEntity 
     , Lookup.toDecoderConfig myChildEntity 
