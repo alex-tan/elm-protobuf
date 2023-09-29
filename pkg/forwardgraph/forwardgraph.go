@@ -3,6 +3,7 @@ package forwardgraph
 import (
 	"bytes"
 	"fmt"
+	"github.com/thematthopkins/elm-protobuf/pkg/elmpb"
 	"github.com/thematthopkins/elm-protobuf/pkg/parsepb"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
@@ -26,20 +27,20 @@ import ForwardNew.Lookup as Lookup exposing (Lookup)
 import Ids
 import Json.Decode as Decode
 import LocalExtra.Lookup as LookupExtra
-import Pb
+import {{.MainPackage}}
 
 allDecoders : List Lookup.DecoderConfig
 allDecoders = [{{ range $index, $element := .Decoders}}
-	{{if $index}},{{end}} Lookup.toDecoderConfig {{ $element.LowerName }} {{end}}
-]
+    {{if $index}},{{end}} Lookup.toDecoderConfig {{ $element.LowerName }} {{end}}
+    ]
 
 {{ range .Decoders}}
-{{ .LowerName }} : Lookup Ids.{{ .UpperName }} Pb.{{ .UpperName }}
+{{ .LowerName }} : Lookup {{.LookupIdType}} Pb.{{ .UpperName }}
 {{ .LowerName }} =
     Lookup.defineNode
         { entrypoint = "{{ .Entrypoint }}"
         , parameters = {{ .Parameters }}
-        , decoder = Pb.{{ .LowerName }}
+        , decoder = Pb.{{ .LowerName }}Decoder
         , cacheKey = Cache.{{ .LowerName }}
         }
 {{end}}
@@ -48,16 +49,21 @@ allDecoders = [{{ range $index, $element := .Decoders}}
 		return nil, err
 	}
 
-	messages_with_ids := parsepb.MessagesWithIds(messages)
-	decoders := GetDecoders(messages_with_ids)
+	graph_messages := append(parsepb.MessagesWithSingletons(messages), parsepb.MessagesWithIds(messages)...)
+
+	decoders := GetDecoders(graph_messages)
+
+	mainPackage := elmpb.PackageName(inFile)
 
 	buff := &bytes.Buffer{}
 	if err = t.Execute(buff, struct {
-		SourceFile string
-		Decoders   []Decoder
+		SourceFile  string
+		MainPackage string
+		Decoders    []Decoder
 	}{
-		SourceFile: inFile.GetName(),
-		Decoders:   decoders,
+		SourceFile:  inFile.GetName(),
+		MainPackage: mainPackage,
+		Decoders:    decoders,
 	}); err != nil {
 		return nil, err
 	}
@@ -71,25 +77,39 @@ allDecoders = [{{ range $index, $element := .Decoders}}
 }
 
 type Decoder struct {
-	UpperName  string
-	LowerName  string
-	Entrypoint string
-	Parameters string
-	Decoder    string
-	CacheKey   string
+	UpperName    string
+	LowerName    string
+	Entrypoint   string
+	Parameters   string
+	LookupIdType string
+	Decoder      string
+	CacheKey     string
 }
 
 func GetDecoders(messages []parsepb.PbMessage) []Decoder {
 	result := []Decoder{}
 
 	for _, m := range messages {
+		parameters := "Lookup.noParameters"
+		lookupIdType := "()"
+		if !m.TypeAlias.IsSingleton {
+			idType := ""
+			for _, f := range m.TypeAlias.Fields {
+				if f.Name == "id" {
+					idType = (string)(f.Type)
+				}
+			}
+			parameters = fmt.Sprintf("LookupExtra.idParam (\\(%s id) -> id)", idType)
+			lookupIdType = idType
+		}
 		result = append(result, Decoder{
-			UpperName:  (string)(m.TypeAlias.Name),
-			LowerName:  m.TypeAlias.LowerName,
-			Entrypoint: (string)(m.TypeAlias.LowerName),
-			Parameters: fmt.Sprintf("LookupExtra.idParam (\\(Ids.%s id) -> id)", m.TypeAlias.Name),
-			Decoder:    fmt.Sprintf("Pb.%s", m.TypeAlias.Decoder),
-			CacheKey:   fmt.Sprintf("Cache.%s", m.TypeAlias.LowerName),
+			UpperName:    (string)(m.TypeAlias.Name),
+			LowerName:    m.TypeAlias.LowerName,
+			Entrypoint:   (string)(m.TypeAlias.LowerName),
+			LookupIdType: lookupIdType,
+			Parameters:   parameters,
+			Decoder:      fmt.Sprintf("Pb.%s", m.TypeAlias.Decoder),
+			CacheKey:     fmt.Sprintf("Cache.%s", m.TypeAlias.LowerName),
 		})
 	}
 

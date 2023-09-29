@@ -179,6 +179,7 @@ func GetIdType(parentName *string, inField *descriptorpb.FieldDescriptorProto) *
 	if v == "" {
 		return nil
 	}
+
 	v = fmt.Sprintf("Ids.%s", stringextras.UpperCamelCase(v))
 	return (*Type)(&v)
 }

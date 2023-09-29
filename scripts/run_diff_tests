@@ -46,4 +46,12 @@ for TEST in "${TEST_ROOT}"/*/; do
     fi
 done
 
+protoc \
+    --proto_path=../wallet/lib/frontend/ \
+    --plugin=protoc-gen-elm="${ELM_PLUGIN}" \
+    --elm_out=..//wallet/client/elm/app/src/ \
+    --elm_opt="remove-deprecated,generate-forward-cache,generate-forward-ids,generate-forward-graph" \
+    --experimental_allow_proto3_optional \
+    frontend.proto
+
 echo "All tests pass"

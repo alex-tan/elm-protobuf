@@ -8,34 +8,56 @@ module ForwardNew.Interface.Cache exposing (..)
 import ForwardNew.CacheKey exposing (CacheKey, cacheKey)
 import ForwardNew.EntrypointCache as EntrypointCache exposing (EntrypointCache)
 import Ids
-import Pb
+import MyPackage
 
 type alias Cache = { 
-	  myEntity : EntrypointCache Pb.MyEntity  
-	,  myChildEntity : EntrypointCache Pb.MyChildEntity  
-	,  unreferencedEntity : EntrypointCache Pb.UnreferencedEntity  
-	,  selfReferencing : EntrypointCache Pb.SelfReferencing  
-	,  overrideName : EntrypointCache Pb.OverrideName  
-	,  list_idsMyEntity : EntrypointCache (List Ids.MyEntity)  
-	,  list_idsMyChildEntity : EntrypointCache (List Ids.MyChildEntity)  
-	,  list_idsUnreferencedEntity : EntrypointCache (List Ids.UnreferencedEntity)  
-	,  list_idsSelfReferencing : EntrypointCache (List Ids.SelfReferencing)  
-	,  list_idsOverrideName : EntrypointCache (List Ids.OverrideName)  
-}
+      mySingleton : EntrypointCache Pb.MySingleton  
+    ,  importedCarrierss : EntrypointCache Pb.ImportedCarrierss  
+    ,  myEntity : EntrypointCache Pb.MyEntity  
+    ,  myChildEntity : EntrypointCache Pb.MyChildEntity  
+    ,  unreferencedEntity : EntrypointCache Pb.UnreferencedEntity  
+    ,  selfReferencing : EntrypointCache Pb.SelfReferencing  
+    ,  overrideName : EntrypointCache Pb.OverrideName  
+    ,  messageWithForeignKeyId : EntrypointCache Pb.MessageWithForeignKeyId  
+    ,  list_idsImportedCarrierss : EntrypointCache (List Ids.ImportedCarrierss)  
+    ,  list_idsMyChildEntity : EntrypointCache (List Ids.MyChildEntity)  
+    ,  list_idsMyEntity : EntrypointCache (List Ids.MyEntity)  
+    ,  list_idsMyNewlyDefinedEntity : EntrypointCache (List Ids.MyNewlyDefinedEntity)  
+    ,  list_idsOverrideName : EntrypointCache (List Ids.OverrideName)  
+    ,  list_idsSelfReferencing : EntrypointCache (List Ids.SelfReferencing)  
+    ,  list_idsUnreferencedEntity : EntrypointCache (List Ids.UnreferencedEntity)  
+    }
 
 empty : Cache
 empty = { 
-	 myEntity = EntrypointCache.empty 
-	, myChildEntity = EntrypointCache.empty 
-	, unreferencedEntity = EntrypointCache.empty 
-	, selfReferencing = EntrypointCache.empty 
-	, overrideName = EntrypointCache.empty 
-	, list_idsMyEntity = EntrypointCache.empty 
-	, list_idsMyChildEntity = EntrypointCache.empty 
-	, list_idsUnreferencedEntity = EntrypointCache.empty 
-	, list_idsSelfReferencing = EntrypointCache.empty 
-	, list_idsOverrideName = EntrypointCache.empty 
-}
+     mySingleton = EntrypointCache.empty 
+    , importedCarrierss = EntrypointCache.empty 
+    , myEntity = EntrypointCache.empty 
+    , myChildEntity = EntrypointCache.empty 
+    , unreferencedEntity = EntrypointCache.empty 
+    , selfReferencing = EntrypointCache.empty 
+    , overrideName = EntrypointCache.empty 
+    , messageWithForeignKeyId = EntrypointCache.empty 
+    , list_idsImportedCarrierss = EntrypointCache.empty 
+    , list_idsMyChildEntity = EntrypointCache.empty 
+    , list_idsMyEntity = EntrypointCache.empty 
+    , list_idsMyNewlyDefinedEntity = EntrypointCache.empty 
+    , list_idsOverrideName = EntrypointCache.empty 
+    , list_idsSelfReferencing = EntrypointCache.empty 
+    , list_idsUnreferencedEntity = EntrypointCache.empty 
+    }
+
+
+
+mySingleton : CacheKey Cache Pb.MySingleton
+mySingleton =
+    cacheKey .mySingleton (\e c -> { c | mySingleton = e })
+
+
+
+importedCarrierss : CacheKey Cache Pb.ImportedCarrierss
+importedCarrierss =
+    cacheKey .importedCarrierss (\e c -> { c | importedCarrierss = e })
 
 
 
@@ -69,9 +91,15 @@ overrideName =
 
 
 
-list_idsMyEntity : CacheKey Cache (List Ids.MyEntity)
-list_idsMyEntity =
-    cacheKey .list_idsMyEntity (\e c -> { c | list_idsMyEntity = e })
+messageWithForeignKeyId : CacheKey Cache Pb.MessageWithForeignKeyId
+messageWithForeignKeyId =
+    cacheKey .messageWithForeignKeyId (\e c -> { c | messageWithForeignKeyId = e })
+
+
+
+list_idsImportedCarrierss : CacheKey Cache (List Ids.ImportedCarrierss)
+list_idsImportedCarrierss =
+    cacheKey .list_idsImportedCarrierss (\e c -> { c | list_idsImportedCarrierss = e })
 
 
 
@@ -81,9 +109,21 @@ list_idsMyChildEntity =
 
 
 
-list_idsUnreferencedEntity : CacheKey Cache (List Ids.UnreferencedEntity)
-list_idsUnreferencedEntity =
-    cacheKey .list_idsUnreferencedEntity (\e c -> { c | list_idsUnreferencedEntity = e })
+list_idsMyEntity : CacheKey Cache (List Ids.MyEntity)
+list_idsMyEntity =
+    cacheKey .list_idsMyEntity (\e c -> { c | list_idsMyEntity = e })
+
+
+
+list_idsMyNewlyDefinedEntity : CacheKey Cache (List Ids.MyNewlyDefinedEntity)
+list_idsMyNewlyDefinedEntity =
+    cacheKey .list_idsMyNewlyDefinedEntity (\e c -> { c | list_idsMyNewlyDefinedEntity = e })
+
+
+
+list_idsOverrideName : CacheKey Cache (List Ids.OverrideName)
+list_idsOverrideName =
+    cacheKey .list_idsOverrideName (\e c -> { c | list_idsOverrideName = e })
 
 
 
@@ -93,8 +133,8 @@ list_idsSelfReferencing =
 
 
 
-list_idsOverrideName : CacheKey Cache (List Ids.OverrideName)
-list_idsOverrideName =
-    cacheKey .list_idsOverrideName (\e c -> { c | list_idsOverrideName = e })
+list_idsUnreferencedEntity : CacheKey Cache (List Ids.UnreferencedEntity)
+list_idsUnreferencedEntity =
+    cacheKey .list_idsUnreferencedEntity (\e c -> { c | list_idsUnreferencedEntity = e })
 
 

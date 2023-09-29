@@ -11,24 +11,45 @@ import ForwardNew.Lookup as Lookup exposing (Lookup)
 import Ids
 import Json.Decode as Decode
 import LocalExtra.Lookup as LookupExtra
-import Pb
+import MyPackage
 
 allDecoders : List Lookup.DecoderConfig
 allDecoders = [
-	 Lookup.toDecoderConfig myEntity 
-	, Lookup.toDecoderConfig myChildEntity 
-	, Lookup.toDecoderConfig unreferencedEntity 
-	, Lookup.toDecoderConfig selfReferencing 
-	, Lookup.toDecoderConfig overrideName 
-]
+     Lookup.toDecoderConfig mySingleton 
+    , Lookup.toDecoderConfig importedCarrierss 
+    , Lookup.toDecoderConfig myEntity 
+    , Lookup.toDecoderConfig myChildEntity 
+    , Lookup.toDecoderConfig unreferencedEntity 
+    , Lookup.toDecoderConfig selfReferencing 
+    , Lookup.toDecoderConfig overrideName 
+    , Lookup.toDecoderConfig messageWithForeignKeyId 
+    ]
 
+
+mySingleton : Lookup () Pb.MySingleton
+mySingleton =
+    Lookup.defineNode
+        { entrypoint = "mySingleton"
+        , parameters = Lookup.noParameters
+        , decoder = Pb.mySingletonDecoder
+        , cacheKey = Cache.mySingleton
+        }
+
+importedCarrierss : Lookup Ids.ImportedCarrierss Pb.ImportedCarrierss
+importedCarrierss =
+    Lookup.defineNode
+        { entrypoint = "importedCarrierss"
+        , parameters = LookupExtra.idParam (\(Ids.ImportedCarrierss id) -> id)
+        , decoder = Pb.importedCarrierssDecoder
+        , cacheKey = Cache.importedCarrierss
+        }
 
 myEntity : Lookup Ids.MyEntity Pb.MyEntity
 myEntity =
     Lookup.defineNode
         { entrypoint = "myEntity"
         , parameters = LookupExtra.idParam (\(Ids.MyEntity id) -> id)
-        , decoder = Pb.myEntity
+        , decoder = Pb.myEntityDecoder
         , cacheKey = Cache.myEntity
         }
 
@@ -37,7 +58,7 @@ myChildEntity =
     Lookup.defineNode
         { entrypoint = "myChildEntity"
         , parameters = LookupExtra.idParam (\(Ids.MyChildEntity id) -> id)
-        , decoder = Pb.myChildEntity
+        , decoder = Pb.myChildEntityDecoder
         , cacheKey = Cache.myChildEntity
         }
 
@@ -46,7 +67,7 @@ unreferencedEntity =
     Lookup.defineNode
         { entrypoint = "unreferencedEntity"
         , parameters = LookupExtra.idParam (\(Ids.UnreferencedEntity id) -> id)
-        , decoder = Pb.unreferencedEntity
+        , decoder = Pb.unreferencedEntityDecoder
         , cacheKey = Cache.unreferencedEntity
         }
 
@@ -55,7 +76,7 @@ selfReferencing =
     Lookup.defineNode
         { entrypoint = "selfReferencing"
         , parameters = LookupExtra.idParam (\(Ids.SelfReferencing id) -> id)
-        , decoder = Pb.selfReferencing
+        , decoder = Pb.selfReferencingDecoder
         , cacheKey = Cache.selfReferencing
         }
 
@@ -64,7 +85,16 @@ overrideName =
     Lookup.defineNode
         { entrypoint = "overrideName"
         , parameters = LookupExtra.idParam (\(Ids.OverrideName id) -> id)
-        , decoder = Pb.overrideName
+        , decoder = Pb.overrideNameDecoder
         , cacheKey = Cache.overrideName
+        }
+
+messageWithForeignKeyId : Lookup Ids.MyNewlyDefinedEntity Pb.MessageWithForeignKeyId
+messageWithForeignKeyId =
+    Lookup.defineNode
+        { entrypoint = "messageWithForeignKeyId"
+        , parameters = LookupExtra.idParam (\(Ids.MyNewlyDefinedEntity id) -> id)
+        , decoder = Pb.messageWithForeignKeyIdDecoder
+        , cacheKey = Cache.messageWithForeignKeyId
         }
 

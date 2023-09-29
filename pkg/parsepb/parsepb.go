@@ -35,6 +35,17 @@ func isDeprecated(options interface{}) bool {
 	}
 }
 
+func MessagesWithSingletons(messages []PbMessage) []PbMessage {
+	result := []PbMessage{}
+
+	for _, m := range messages {
+		if m.TypeAlias.IsSingleton {
+			result = append(result, m)
+		}
+	}
+	return result
+}
+
 func MessagesWithIds(messages []PbMessage) []PbMessage {
 	result := []PbMessage{}
 
@@ -141,16 +152,12 @@ func syntheticFieldForOneOfIndex(messagePb *descriptorpb.DescriptorProto, oneofI
 }
 
 func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p generationparams.Parameters) []PbMessage {
-	//protoregistry.GlobalFiles.RegisterFile((xname)
-	//protoregistry.GlobalFiles.RegisterFile()
-	//protoregistry.GlobalFiles.FindDescriptorByName()
 	var result []PbMessage
 
 	for _, messagePb := range messagePbs {
 		isSingleton := false
-		if proto.HasExtension(messagePb, forwardextensions.E_Singleton) {
-			//isSingleton := true
-			panic("found singleton")
+		if proto.HasExtension(messagePb.Options, forwardextensions.E_Singleton) {
+			isSingleton = true
 		}
 		if isDeprecated(messagePb.Options) && p.RemoveDeprecated {
 			continue

@@ -2,9 +2,13 @@ package forwardcache
 
 import (
 	"bytes"
+	"github.com/thematthopkins/elm-protobuf/pkg/elmpb"
 	"github.com/thematthopkins/elm-protobuf/pkg/parsepb"
+	"github.com/thematthopkins/elm-protobuf/pkg/stringextras"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
+	"sort"
+	"strings"
 
 	"text/template"
 )
@@ -22,16 +26,16 @@ func Generate(inFile *descriptorpb.FileDescriptorProto, messages []parsepb.PbMes
 import ForwardNew.CacheKey exposing (CacheKey, cacheKey)
 import ForwardNew.EntrypointCache as EntrypointCache exposing (EntrypointCache)
 import Ids
-import Pb
+import {{.MainPackage}}
 
 type alias Cache = { {{ range $index, $element := .CacheDefs}}
-	{{if $index}},{{end}} {{if $element.IsList }} list_ids{{$element.UpperName}} : EntrypointCache (List Ids.{{$element.UpperName}}) {{else}} {{$element.LowerName}} : EntrypointCache Pb.{{$element.UpperName}} {{end}} {{end}}
-}
+    {{if $index}},{{end}} {{if $element.IsList }} list_ids{{$element.UpperName}} : EntrypointCache (List Ids.{{$element.UpperName}}) {{else}} {{$element.LowerName}} : EntrypointCache Pb.{{$element.UpperName}} {{end}} {{end}}
+    }
 
 empty : Cache
 empty = { {{ range $index, $element := .CacheDefs}}
-	{{if $index}},{{end}} {{if $element.IsList }}list_ids{{$element.UpperName}}{{else}}{{$element.LowerName}}{{end}} = EntrypointCache.empty {{end}}
-}
+    {{if $index}},{{end}} {{if $element.IsList }}list_ids{{$element.UpperName}}{{else}}{{$element.LowerName}}{{end}} = EntrypointCache.empty {{end}}
+    }
 
 {{ range .CacheDefs}}
 {{if .IsList }}
@@ -49,9 +53,18 @@ list_ids{{.UpperName}} =
 		return nil, err
 	}
 
+	cacheDefs := []CacheDef{}
+	singletons := parsepb.MessagesWithSingletons(messages)
+	for _, m := range singletons {
+		cacheDefs = append(cacheDefs, CacheDef{
+			UpperName: (string)(m.TypeAlias.Name),
+			LowerName: m.TypeAlias.LowerName,
+			IsList:    false,
+		})
+	}
+
 	messages_with_ids := parsepb.MessagesWithIds(messages)
 
-	cacheDefs := []CacheDef{}
 	for _, m := range messages_with_ids {
 		cacheDefs = append(cacheDefs, CacheDef{
 			UpperName: (string)(m.TypeAlias.Name),
@@ -60,21 +73,45 @@ list_ids{{.UpperName}} =
 		})
 	}
 
+	messages_by_ids := map[string]struct{}{}
+
 	for _, m := range messages_with_ids {
+		for _, f := range m.TypeAlias.Fields {
+			if f.Name == "id" {
+				messages_by_ids[(string)(f.Type)] = struct{}{}
+			}
+		}
+	}
+
+	unique_messages_by_ids := []string{}
+	for n := range messages_by_ids {
+		unique_messages_by_ids = append(unique_messages_by_ids, n)
+	}
+
+	sort.Strings(unique_messages_by_ids)
+
+	for _, s := range unique_messages_by_ids {
+		idType := s
+		if strings.HasPrefix(idType, "Ids.") {
+			idType = strings.TrimPrefix(idType, "Ids.")
+		}
 		cacheDefs = append(cacheDefs, CacheDef{
-			UpperName: (string)(m.TypeAlias.Name),
-			LowerName: m.TypeAlias.LowerName,
+			UpperName: idType,
+			LowerName: stringextras.LowerCamelCase(idType),
 			IsList:    true,
 		})
 	}
+	mainPackage := elmpb.PackageName(inFile)
 
 	buff := &bytes.Buffer{}
 	if err = t.Execute(buff, struct {
-		SourceFile string
-		CacheDefs  []CacheDef
+		SourceFile  string
+		MainPackage string
+		CacheDefs   []CacheDef
 	}{
-		SourceFile: inFile.GetName(),
-		CacheDefs:  cacheDefs,
+		SourceFile:  inFile.GetName(),
+		MainPackage: mainPackage,
+		CacheDefs:   cacheDefs,
 	}); err != nil {
 		return nil, err
 	}

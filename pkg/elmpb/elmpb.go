@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/thematthopkins/elm-protobuf/pkg/forwardextensions"
 	"github.com/thematthopkins/elm-protobuf/pkg/generationparams"
 	"github.com/thematthopkins/elm-protobuf/pkg/parsepb"
 	"github.com/thematthopkins/elm-protobuf/pkg/stringextras"
@@ -14,6 +15,7 @@ import (
 	"github.com/thematthopkins/elm-protobuf/pkg/elm"
 
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
@@ -81,6 +83,9 @@ import Json.Encode as JE
 {{- if .ImportDict }}
 import Dict
 {{- end }}
+{{- if .ImportIds }}
+import Ids
+{{- end }}
 {{- range .AdditionalImports }}
 import {{ . }} exposing (..)
 {{ end }}
@@ -107,13 +112,15 @@ uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 		SourceFile        string
 		ModuleName        string
 		ImportDict        bool
+		ImportIds         bool
 		AdditionalImports []string
 		TopEnums          []elm.EnumCustomType
 		Messages          []parsepb.PbMessage
 	}{
 		SourceFile:        inFile.GetName(),
-		ModuleName:        moduleName(inFile.GetName()),
+		ModuleName:        moduleName(PackageName(inFile)),
 		ImportDict:        hasMapEntries(inFile),
+		ImportIds:         p.GenerateForwardIds,
 		AdditionalImports: getAdditionalImports(inFile.GetDependency()),
 		TopEnums:          parsepb.EnumsToCustomTypes([]string{}, inFile.GetEnumType(), p),
 		Messages:          parsepb.Messages([]string{}, inFile.GetMessageType(), p),
@@ -121,7 +128,7 @@ uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 		return nil, err
 	}
 
-	fileName := fileName(inFile.GetName())
+	fileName := FileName(inFile)
 	result := buff.String()
 	return &pluginpb.CodeGeneratorResponse_File{
 		Name:    &fileName,
@@ -167,8 +174,11 @@ func getAdditionalImports(dependencies []string) []string {
 	return additions
 }
 
-func fileName(inFilePath string) string {
-	inFileDir, inFileName := filepath.Split(inFilePath)
+func PackageName(inFile *descriptorpb.FileDescriptorProto) string {
+	if proto.HasExtension(inFile.Options, forwardextensions.E_ElmPackage) {
+		return proto.GetExtension(inFile.Options, forwardextensions.E_ElmPackage).(string)
+	}
+	inFileDir, inFileName := filepath.Split(inFile.GetName())
 
 	trimmed := strings.TrimSuffix(inFileName, ".proto")
 	shortFileName := stringextras.FirstUpper(trimmed)
@@ -182,7 +192,11 @@ func fileName(inFilePath string) string {
 		fullFileName += stringextras.FirstUpper(segment) + "/"
 	}
 
-	return fullFileName + shortFileName + ".elm"
+	return fullFileName + shortFileName
+}
+
+func FileName(inFile *descriptorpb.FileDescriptorProto) string {
+	return PackageName(inFile) + ".elm"
 }
 
 func hasMapEntries(inFile *descriptorpb.FileDescriptorProto) bool {
