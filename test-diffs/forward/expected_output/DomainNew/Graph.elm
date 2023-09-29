@@ -26,10 +26,10 @@ allDecoders = [
     ]
 
 
-mySingleton : Lookup () Pb.MySingleton
-mySingleton =
+mySingletonSingleton : Lookup () Pb.MySingleton
+mySingletonSingleton =
     Lookup.defineNode
-        { entrypoint = "mySingleton"
+        { entrypoint = "mySingletonSingleton"
         , parameters = Lookup.noParameters
         , decoder = Pb.mySingletonDecoder
         , cacheKey = Cache.mySingleton

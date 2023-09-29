@@ -35,8 +35,8 @@ allDecoders = [{{ range $index, $element := .Decoders}}
     ]
 
 {{ range .Decoders}}
-{{ .LowerName }} : Lookup {{.LookupIdType}} Pb.{{ .UpperName }}
-{{ .LowerName }} =
+{{ .Entrypoint }} : Lookup {{.LookupIdType}} Pb.{{ .UpperName }}
+{{ .Entrypoint }} =
     Lookup.defineNode
         { entrypoint = "{{ .Entrypoint }}"
         , parameters = {{ .Parameters }}
@@ -92,6 +92,7 @@ func GetDecoders(messages []parsepb.PbMessage) []Decoder {
 	for _, m := range messages {
 		parameters := "Lookup.noParameters"
 		lookupIdType := "()"
+		entrypoint := (string)(m.TypeAlias.LowerName) + "Singleton"
 		if !m.TypeAlias.IsSingleton {
 			idType := ""
 			for _, f := range m.TypeAlias.Fields {
@@ -101,11 +102,12 @@ func GetDecoders(messages []parsepb.PbMessage) []Decoder {
 			}
 			parameters = fmt.Sprintf("LookupExtra.idParam (\\(%s id) -> id)", idType)
 			lookupIdType = idType
+			entrypoint = (string)(m.TypeAlias.LowerName)
 		}
 		result = append(result, Decoder{
 			UpperName:    (string)(m.TypeAlias.Name),
 			LowerName:    m.TypeAlias.LowerName,
-			Entrypoint:   (string)(m.TypeAlias.LowerName),
+			Entrypoint:   entrypoint,
 			LookupIdType: lookupIdType,
 			Parameters:   parameters,
 			Decoder:      fmt.Sprintf("Pb.%s", m.TypeAlias.Decoder),

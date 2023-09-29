@@ -39,7 +39,7 @@ for TEST in "${TEST_ROOT}"/*/; do
           "${INPUT_DIR}"/*.proto
     fi
 
-    if ! DIFF_OUTPUT=$(diff -y "${EXPECTED_DIR}" "${OUTPUT_DIR}") ; then
+    if ! DIFF_OUTPUT=$(diff -y -r "${EXPECTED_DIR}" "${OUTPUT_DIR}") ; then
         echo "${DIFF_OUTPUT}"
         echo "Detected difference in ${INPUT_DIR}"
         exit 1
