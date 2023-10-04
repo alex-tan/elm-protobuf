@@ -43,7 +43,7 @@ for TEST in "${TEST_ROOT}"/*/; do
         echo "${DIFF_OUTPUT}"
         echo "Detected difference in ${INPUT_DIR}"
         echo "to accept the changes, run:"
-        echo "cp -r ./test-diffs/${OUTPUT_DIR}/actual_output/* ./test-diffs/${EXPECTED_DIR}/expected_output"
+        echo "cp -r ${OUTPUT_DIR}/* ${EXPECTED_DIR}/"
         exit 1
     fi
 done

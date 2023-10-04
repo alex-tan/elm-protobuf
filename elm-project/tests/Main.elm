@@ -139,7 +139,7 @@ fooDefault =
     , colours = []
     , singleIntField = 0
     , repeatedIntField = []
-    , oo = T.OoUnspecified
+    , oo = T.Foo_OoUnspecified
     , bytesField = []
     , stringValueField = Nothing
     , otherField = Nothing
@@ -151,7 +151,7 @@ fooDefault =
 recDefault : R.Rec
 recDefault =
     { int32Field = 0
-    , r = R.RUnspecified
+    , r = R.Rec_RUnspecified
     , stringField = ""
     }
 
@@ -204,7 +204,7 @@ foo =
         , 222
         , 333
         ]
-    , oo = T.Oo1 1
+    , oo = T.Foo_Oo1 1
     , bytesField = []
     , stringValueField = Nothing
     , otherField =
@@ -277,7 +277,7 @@ wrongTypeJson =
 oo1Set : T.Foo
 oo1Set =
     { fooDefault
-        | oo = T.Oo1 123
+        | oo = T.Foo_Oo1 123
     }
 
 
@@ -293,7 +293,7 @@ oo1SetJson =
 oo2Set : T.Foo
 oo2Set =
     { fooDefault
-        | oo = T.Oo2 True
+        | oo = T.Foo_Oo2 True
     }
 
 
@@ -319,9 +319,9 @@ rec1 : R.Rec
 rec1 =
     { int32Field = 0
     , r =
-        R.RecField
+        R.Rec_RecField
             { int32Field = 0
-            , r = R.RUnspecified
+            , r = R.Rec_RUnspecified
             , stringField = ""
             }
     , stringField = ""
@@ -343,12 +343,12 @@ rec2 : R.Rec
 rec2 =
     { int32Field = 0
     , r =
-        R.RecField
+        R.Rec_RecField
             { int32Field = 0
             , r =
-                R.RecField
+                R.Rec_RecField
                     { int32Field = 0
-                    , r = R.RUnspecified
+                    , r = R.Rec_RUnspecified
                     , stringField = ""
                     }
             , stringField = ""

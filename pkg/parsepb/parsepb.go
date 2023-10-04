@@ -213,6 +213,7 @@ func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p ge
 			}
 		}
 
+		newPreface := append([]string{messagePb.GetName()}, preface...)
 		for oneofIndex, oneOfPb := range messagePb.GetOneofDecl() {
 			syntheticField := syntheticFieldForOneOfIndex(messagePb, (int32)(oneofIndex))
 			if syntheticField != nil {
@@ -225,14 +226,13 @@ func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p ge
 			} else {
 				newFields = append(newFields, elm.TypeAliasField{
 					Name:    elm.FieldName(oneOfPb.GetName()),
-					Type:    elm.OneOfType(oneOfPb.GetName()),
-					Encoder: elm.OneOfEncoder(oneOfPb),
-					Decoder: elm.OneOfDecoder(oneOfPb),
+					Type:    elm.OneOfType(newPreface, oneOfPb.GetName()),
+					Encoder: elm.OneOfEncoder(newPreface, oneOfPb),
+					Decoder: elm.OneOfDecoder(newPreface, oneOfPb),
 				})
 			}
 		}
 
-		newPreface := append([]string{messagePb.GetName()}, preface...)
 		name := elm.NestedType(messagePb.GetName(), preface)
 		result = append(result, PbMessage{
 			TypeAlias: elm.TypeAlias{
@@ -243,7 +243,7 @@ func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p ge
 				Encoder:     elm.EncoderName(name),
 				Fields:      newFields,
 			},
-			OneOfCustomTypes: oneOfsToCustomTypes([]string{}, messagePb, p),
+			OneOfCustomTypes: oneOfsToCustomTypes(newPreface, messagePb, p),
 			EnumCustomTypes:  EnumsToCustomTypes(newPreface, messagePb.GetEnumType(), p),
 			NestedMessages:   Messages(newPreface, messagePb.GetNestedType(), p),
 		})

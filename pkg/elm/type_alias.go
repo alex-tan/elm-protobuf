@@ -156,17 +156,17 @@ func RequiredFieldDecoder(parentName *string, pb *descriptorpb.FieldDescriptorPr
 	))
 }
 
-func OneOfEncoder(pb *descriptorpb.OneofDescriptorProto) FieldEncoder {
+func OneOfEncoder(preface []string, pb *descriptorpb.OneofDescriptorProto) FieldEncoder {
 	return FieldEncoder(fmt.Sprintf("%s v.%s",
-		EncoderName(Type(stringextras.CamelCase(pb.GetName()))),
+		EncoderName(NestedType(stringextras.CamelCase(pb.GetName()), preface)),
 		FieldName(pb.GetName()),
 	))
 }
 
-func OneOfDecoder(pb *descriptorpb.OneofDescriptorProto) FieldDecoder {
+func OneOfDecoder(preface []string, pb *descriptorpb.OneofDescriptorProto) FieldDecoder {
 	return FieldDecoder(fmt.Sprintf(
 		"field %s",
-		DecoderName(Type(stringextras.CamelCase(pb.GetName()))),
+		DecoderName(NestedType(stringextras.CamelCase(pb.GetName()), preface)),
 	))
 }
 
@@ -249,8 +249,8 @@ func ListDecoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) Fiel
 	))
 }
 
-func OneOfType(in string) Type {
-	return Type(appendUnderscoreToReservedKeywords(stringextras.UpperCamelCase(in)))
+func OneOfType(preface []string, in string) Type {
+	return NestedType(appendUnderscoreToReservedKeywords(stringextras.UpperCamelCase(in)), preface)
 }
 
 // TypeAliasTemplate - defines templates for self contained type aliases

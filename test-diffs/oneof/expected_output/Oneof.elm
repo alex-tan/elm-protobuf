@@ -15,8 +15,8 @@ uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 
 
 type alias Foo =
-    { firstOneof : FirstOneof
-    , secondOneof : SecondOneof
+    { firstOneof : Foo_FirstOneof
+    , secondOneof : Foo_SecondOneof
     , syntheticOneof : Maybe String
     , syntheticOneofInnerMessage : Maybe InnerMessage
     }
@@ -25,8 +25,8 @@ type alias Foo =
 fooDecoder : JD.Decoder Foo
 fooDecoder =
     JD.lazy <| \_ -> decode Foo
-        |> field firstOneofDecoder
-        |> field secondOneofDecoder
+        |> field foo_FirstOneofDecoder
+        |> field foo_SecondOneofDecoder
         |> optional "syntheticOneof" JD.string
         |> optional "syntheticOneofInnerMessage" innerMessageDecoder
 
@@ -34,66 +34,66 @@ fooDecoder =
 fooEncoder : Foo -> JE.Value
 fooEncoder v =
     JE.object <| List.filterMap identity <|
-        [ (firstOneofEncoder v.firstOneof)
-        , (secondOneofEncoder v.secondOneof)
+        [ (foo_FirstOneofEncoder v.firstOneof)
+        , (foo_SecondOneofEncoder v.secondOneof)
         , (optionalEncoder "syntheticOneof" JE.string v.syntheticOneof)
         , (optionalEncoder "syntheticOneofInnerMessage" innerMessageEncoder v.syntheticOneofInnerMessage)
         ]
 
 
-type FirstOneof
-    = FirstOneofUnspecified
-    | StringField String
-    | IntField Int
+type Foo_FirstOneof
+    = Foo_FirstOneofUnspecified
+    | Foo_StringField String
+    | Foo_IntField Int
 
 
-firstOneofDecoder : JD.Decoder FirstOneof
-firstOneofDecoder =
+foo_FirstOneofDecoder : JD.Decoder Foo_FirstOneof
+foo_FirstOneofDecoder =
     JD.lazy <| \_ -> JD.oneOf
-        [ JD.map StringField (JD.field "stringField" JD.string)
-        , JD.map IntField (JD.field "intField" intDecoder)
-        , JD.succeed FirstOneofUnspecified
+        [ JD.map Foo_StringField (JD.field "stringField" JD.string)
+        , JD.map Foo_IntField (JD.field "intField" intDecoder)
+        , JD.succeed Foo_FirstOneofUnspecified
         ]
 
 
-firstOneofEncoder : FirstOneof -> Maybe ( String, JE.Value )
-firstOneofEncoder v =
+foo_FirstOneofEncoder : Foo_FirstOneof -> Maybe ( String, JE.Value )
+foo_FirstOneofEncoder v =
     case v of
-        FirstOneofUnspecified ->
+        Foo_FirstOneofUnspecified ->
             Nothing
 
-        StringField x ->
+        Foo_StringField x ->
             Just ( "stringField", JE.string x )
 
-        IntField x ->
+        Foo_IntField x ->
             Just ( "intField", JE.int x )
 
 
-type SecondOneof
-    = SecondOneofUnspecified
-    | BoolField Bool
-    | OtherStringField String
+type Foo_SecondOneof
+    = Foo_SecondOneofUnspecified
+    | Foo_BoolField Bool
+    | Foo_OtherStringField String
 
 
-secondOneofDecoder : JD.Decoder SecondOneof
-secondOneofDecoder =
+foo_SecondOneofDecoder : JD.Decoder Foo_SecondOneof
+foo_SecondOneofDecoder =
     JD.lazy <| \_ -> JD.oneOf
-        [ JD.map BoolField (JD.field "boolField" JD.bool)
-        , JD.map OtherStringField (JD.field "otherStringField" JD.string)
-        , JD.succeed SecondOneofUnspecified
+        [ JD.map Foo_BoolField (JD.field "boolField" JD.bool)
+        , JD.map Foo_OtherStringField (JD.field "otherStringField" JD.string)
+        , JD.succeed Foo_SecondOneofUnspecified
         ]
 
 
-secondOneofEncoder : SecondOneof -> Maybe ( String, JE.Value )
-secondOneofEncoder v =
+foo_SecondOneofEncoder : Foo_SecondOneof -> Maybe ( String, JE.Value )
+foo_SecondOneofEncoder v =
     case v of
-        SecondOneofUnspecified ->
+        Foo_SecondOneofUnspecified ->
             Nothing
 
-        BoolField x ->
+        Foo_BoolField x ->
             Just ( "boolField", JE.bool x )
 
-        OtherStringField x ->
+        Foo_OtherStringField x ->
             Just ( "otherStringField", JE.string x )
 
 
@@ -116,46 +116,46 @@ innerMessageEncoder v =
 
 
 type alias Foo2 =
-    { firstOneof : FirstOneof
+    { firstOneof : Foo2_FirstOneof
     }
 
 
 foo2Decoder : JD.Decoder Foo2
 foo2Decoder =
     JD.lazy <| \_ -> decode Foo2
-        |> field firstOneofDecoder
+        |> field foo2_FirstOneofDecoder
 
 
 foo2Encoder : Foo2 -> JE.Value
 foo2Encoder v =
     JE.object <| List.filterMap identity <|
-        [ (firstOneofEncoder v.firstOneof)
+        [ (foo2_FirstOneofEncoder v.firstOneof)
         ]
 
 
-type FirstOneof
-    = FirstOneofUnspecified
-    | StringField String
-    | IntField Int
+type Foo2_FirstOneof
+    = Foo2_FirstOneofUnspecified
+    | Foo2_StringField String
+    | Foo2_IntField Int
 
 
-firstOneofDecoder : JD.Decoder FirstOneof
-firstOneofDecoder =
+foo2_FirstOneofDecoder : JD.Decoder Foo2_FirstOneof
+foo2_FirstOneofDecoder =
     JD.lazy <| \_ -> JD.oneOf
-        [ JD.map StringField (JD.field "stringField" JD.string)
-        , JD.map IntField (JD.field "intField" intDecoder)
-        , JD.succeed FirstOneofUnspecified
+        [ JD.map Foo2_StringField (JD.field "stringField" JD.string)
+        , JD.map Foo2_IntField (JD.field "intField" intDecoder)
+        , JD.succeed Foo2_FirstOneofUnspecified
         ]
 
 
-firstOneofEncoder : FirstOneof -> Maybe ( String, JE.Value )
-firstOneofEncoder v =
+foo2_FirstOneofEncoder : Foo2_FirstOneof -> Maybe ( String, JE.Value )
+foo2_FirstOneofEncoder v =
     case v of
-        FirstOneofUnspecified ->
+        Foo2_FirstOneofUnspecified ->
             Nothing
 
-        StringField x ->
+        Foo2_StringField x ->
             Just ( "stringField", JE.string x )
 
-        IntField x ->
+        Foo2_IntField x ->
             Just ( "intField", JE.int x )
