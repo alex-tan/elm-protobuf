@@ -42,58 +42,54 @@ fooEncoder v =
 
 
 type Foo_FirstOneof
-    = Foo_FirstOneofUnspecified
-    | Foo_StringField String
-    | Foo_IntField Int
+    = 
+     Foo_FirstOneof_StringField String
+    | Foo_FirstOneof_IntField Int
 
 
 foo_FirstOneofDecoder : JD.Decoder Foo_FirstOneof
 foo_FirstOneofDecoder =
     JD.lazy <| \_ -> JD.oneOf
-        [ JD.map Foo_StringField (JD.field "stringField" JD.string)
-        , JD.map Foo_IntField (JD.field "intField" intDecoder)
-        , JD.succeed Foo_FirstOneofUnspecified
+        [ JD.map Foo_FirstOneof_StringField (JD.field "stringField" JD.string)
+        , JD.map Foo_FirstOneof_IntField (JD.field "intField" intDecoder)
+        , JD.fail "Foo_FirstOneof_Unspecified"
         ]
 
 
 foo_FirstOneofEncoder : Foo_FirstOneof -> Maybe ( String, JE.Value )
 foo_FirstOneofEncoder v =
     case v of
-        Foo_FirstOneofUnspecified ->
-            Nothing
 
-        Foo_StringField x ->
+        Foo_FirstOneof_StringField x ->
             Just ( "stringField", JE.string x )
 
-        Foo_IntField x ->
+        Foo_FirstOneof_IntField x ->
             Just ( "intField", JE.int x )
 
 
 type Foo_SecondOneof
-    = Foo_SecondOneofUnspecified
-    | Foo_BoolField Bool
-    | Foo_OtherStringField String
+    = 
+     Foo_SecondOneof_BoolField Bool
+    | Foo_SecondOneof_OtherStringField String
 
 
 foo_SecondOneofDecoder : JD.Decoder Foo_SecondOneof
 foo_SecondOneofDecoder =
     JD.lazy <| \_ -> JD.oneOf
-        [ JD.map Foo_BoolField (JD.field "boolField" JD.bool)
-        , JD.map Foo_OtherStringField (JD.field "otherStringField" JD.string)
-        , JD.succeed Foo_SecondOneofUnspecified
+        [ JD.map Foo_SecondOneof_BoolField (JD.field "boolField" JD.bool)
+        , JD.map Foo_SecondOneof_OtherStringField (JD.field "otherStringField" JD.string)
+        , JD.fail "Foo_SecondOneof_Unspecified"
         ]
 
 
 foo_SecondOneofEncoder : Foo_SecondOneof -> Maybe ( String, JE.Value )
 foo_SecondOneofEncoder v =
     case v of
-        Foo_SecondOneofUnspecified ->
-            Nothing
 
-        Foo_BoolField x ->
+        Foo_SecondOneof_BoolField x ->
             Just ( "boolField", JE.bool x )
 
-        Foo_OtherStringField x ->
+        Foo_SecondOneof_OtherStringField x ->
             Just ( "otherStringField", JE.string x )
 
 
@@ -134,28 +130,26 @@ foo2Encoder v =
 
 
 type Foo2_FirstOneof
-    = Foo2_FirstOneofUnspecified
-    | Foo2_StringField String
-    | Foo2_IntField Int
+    = 
+     Foo2_FirstOneof_StringField String
+    | Foo2_FirstOneof_IntField Int
 
 
 foo2_FirstOneofDecoder : JD.Decoder Foo2_FirstOneof
 foo2_FirstOneofDecoder =
     JD.lazy <| \_ -> JD.oneOf
-        [ JD.map Foo2_StringField (JD.field "stringField" JD.string)
-        , JD.map Foo2_IntField (JD.field "intField" intDecoder)
-        , JD.succeed Foo2_FirstOneofUnspecified
+        [ JD.map Foo2_FirstOneof_StringField (JD.field "stringField" JD.string)
+        , JD.map Foo2_FirstOneof_IntField (JD.field "intField" intDecoder)
+        , JD.fail "Foo2_FirstOneof_Unspecified"
         ]
 
 
 foo2_FirstOneofEncoder : Foo2_FirstOneof -> Maybe ( String, JE.Value )
 foo2_FirstOneofEncoder v =
     case v of
-        Foo2_FirstOneofUnspecified ->
-            Nothing
 
-        Foo2_StringField x ->
+        Foo2_FirstOneof_StringField x ->
             Just ( "stringField", JE.string x )
 
-        Foo2_IntField x ->
+        Foo2_FirstOneof_IntField x ->
             Just ( "intField", JE.int x )

@@ -111,6 +111,7 @@ func oneOfsToCustomTypes(preface []string, messagePb *descriptorpb.DescriptorPro
 			continue
 		}
 
+		variantPreface := append([]string{oneOfPb.GetName()}, preface...)
 		var variants []elm.OneOfVariant
 		for _, inField := range messagePb.GetField() {
 			if isDeprecated(inField.Options) && p.RemoveDeprecated {
@@ -122,7 +123,7 @@ func oneOfsToCustomTypes(preface []string, messagePb *descriptorpb.DescriptorPro
 			}
 
 			variants = append(variants, elm.OneOfVariant{
-				Name:     elm.NestedVariantName(inField.GetName(), preface),
+				Name:     elm.NestedVariantName(inField.GetName(), variantPreface),
 				JSONName: elm.OneOfVariantJSONName(inField),
 				Type:     elm.BasicFieldType(nil, inField),
 				Decoder:  elm.BasicFieldDecoder(nil, inField),

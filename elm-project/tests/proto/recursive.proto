@@ -5,6 +5,7 @@ message Rec {
 
   oneof r {
     Rec rec_field = 2;
+    string rec_string_field=3;
   }
 
   string string_field = 4;

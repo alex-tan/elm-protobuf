@@ -45,14 +45,12 @@ suite =
         , describe "oneof"
             [ test "encode" <| \() -> encode T.fooEncoder foo |> equal fooJson
             , describe "decode"
-                [ test "empty" <| \() -> decode T.fooDecoder emptyJson |> equal (Ok fooDefault)
-                , test "oo1" <| \() -> decode T.fooDecoder oo1SetJson |> equal (Ok oo1Set)
+                [ test "oo1" <| \() -> decode T.fooDecoder oo1SetJson |> equal (Ok oo1Set)
                 , test "oo2" <| \() -> decode T.fooDecoder oo2SetJson |> equal (Ok oo2Set)
                 ]
             ]
         , describe "recursion"
-            [ test "decode empty JSON" <| \() -> decode R.recDecoder emptyJson |> equal (Ok recDefault)
-            , describe "decode"
+            [ describe "decode"
                 [ test "1-level JSON" <| \() -> decode R.recDecoder recJson1 |> equal (Ok rec1)
                 , test "2-level JSON" <| \() -> decode R.recDecoder recJson2 |> equal (Ok rec2)
                 ]
@@ -139,7 +137,7 @@ fooDefault =
     , colours = []
     , singleIntField = 0
     , repeatedIntField = []
-    , oo = T.Foo_OoUnspecified
+    , oo = T.Foo_Oo_Oo1 0
     , bytesField = []
     , stringValueField = Nothing
     , otherField = Nothing
@@ -151,7 +149,7 @@ fooDefault =
 recDefault : R.Rec
 recDefault =
     { int32Field = 0
-    , r = R.Rec_RUnspecified
+    , r = R.Rec_R_RecStringField "v"
     , stringField = ""
     }
 
@@ -204,7 +202,7 @@ foo =
         , 222
         , 333
         ]
-    , oo = T.Foo_Oo1 1
+    , oo = T.Foo_Oo_Oo1 1
     , bytesField = []
     , stringValueField = Nothing
     , otherField =
@@ -277,7 +275,7 @@ wrongTypeJson =
 oo1Set : T.Foo
 oo1Set =
     { fooDefault
-        | oo = T.Foo_Oo1 123
+        | oo = T.Foo_Oo_Oo1 123
     }
 
 
@@ -293,7 +291,7 @@ oo1SetJson =
 oo2Set : T.Foo
 oo2Set =
     { fooDefault
-        | oo = T.Foo_Oo2 True
+        | oo = T.Foo_Oo_Oo2 True
     }
 
 
@@ -310,7 +308,9 @@ recJson1 : String
 recJson1 =
     String.trim """
 {
-  "recField": {}
+  "recField": {
+      "recStringField": "val"
+  }
 }
 """
 
@@ -319,9 +319,9 @@ rec1 : R.Rec
 rec1 =
     { int32Field = 0
     , r =
-        R.Rec_RecField
+        R.Rec_R_RecField
             { int32Field = 0
-            , r = R.Rec_RUnspecified
+            , r = R.Rec_R_RecStringField "val"
             , stringField = ""
             }
     , stringField = ""
@@ -333,7 +333,9 @@ recJson2 =
     String.trim """
 {
   "recField": {
-    "recField": {}
+    "recField": {
+      "recStringField": "val"
+    }
   }
 }
 """
@@ -343,12 +345,12 @@ rec2 : R.Rec
 rec2 =
     { int32Field = 0
     , r =
-        R.Rec_RecField
+        R.Rec_R_RecField
             { int32Field = 0
             , r =
-                R.Rec_RecField
+                R.Rec_R_RecField
                     { int32Field = 0
-                    , r = R.Rec_RUnspecified
+                    , r = R.Rec_R_RecStringField "val"
                     , stringField = ""
                     }
             , stringField = ""
@@ -361,7 +363,8 @@ timestampJson : String
 timestampJson =
     String.trim """
 {
-  "timestampField": "1988-12-14T01:23:45.678Z"
+  "timestampField": "1988-12-14T01:23:45.678Z",
+  "oo1": 0
 }
 """
 
