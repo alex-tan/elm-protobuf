@@ -131,7 +131,9 @@ msgEmpty =
 
 fooDefault : T.Foo
 fooDefault =
-    { s = Nothing
+    { s =
+        { int32Field = 0
+        }
     , ss = []
     , colour = T.ColourUnspecified
     , colours = []
@@ -182,9 +184,8 @@ emptyJson =
 foo : T.Foo
 foo =
     { s =
-        Just
-            { int32Field = 11
-            }
+        { int32Field = 11
+        }
     , ss =
         [ { int32Field = 111
           }
@@ -243,13 +244,13 @@ fooJson =
     222,
     333
   ],
+  "oo1": 1,
   "otherField": {
     "stringField": "xxx"
   },
   "otherDirField": {
     "stringField": "yyy"
-  },
-  "oo1": 1
+  }
 }
 """
 
@@ -283,6 +284,7 @@ oo1SetJson : String
 oo1SetJson =
     String.trim """
 {
+  "s": {},
   "oo1": 123
 }
 """
@@ -299,6 +301,7 @@ oo2SetJson : String
 oo2SetJson =
     String.trim """
 {
+  "s": {},
   "oo2": true
 }
 """
@@ -363,8 +366,9 @@ timestampJson : String
 timestampJson =
     String.trim """
 {
-  "timestampField": "1988-12-14T01:23:45.678Z",
-  "oo1": 0
+  "s": {},
+  "oo1": 0,
+  "timestampField": "1988-12-14T01:23:45.678Z"
 }
 """
 

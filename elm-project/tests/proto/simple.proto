@@ -37,10 +37,10 @@ message Foo {
 
   bytes bytes_field = 9;
 
-  google.protobuf.StringValue string_value_field = 10;
+  optional google.protobuf.StringValue string_value_field = 10;
 
-  Other other_field = 11;
-  OtherDir other_dir_field = 12;
+  optional Other other_field = 11;
+  optional OtherDir other_dir_field = 12;
 
-  google.protobuf.Timestamp timestamp_field = 13;
+  optional google.protobuf.Timestamp timestamp_field = 13;
 }

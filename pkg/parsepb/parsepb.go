@@ -254,8 +254,12 @@ func Messages(preface []string, messagePbs []*descriptorpb.DescriptorProto, p ge
 }
 
 func isOptional(inField *descriptorpb.FieldDescriptorProto) bool {
-	return inField.GetLabel() == descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL &&
-		inField.GetType() == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE
+	_, isWellKnownType := elm.WellKnownTypeMap[inField.GetTypeName()]
+
+	return isWellKnownType && inField.GetLabel() == descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL &&
+		inField.GetType() == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE ||
+		inField.GetType() == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE &&
+			inField.GetProto3Optional()
 }
 
 func isRepeated(inField *descriptorpb.FieldDescriptorProto) bool {

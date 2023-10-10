@@ -14,6 +14,14 @@ import Dict
 
 uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 
+requiredWithoutDefault : String -> JD.Decoder a -> JD.Decoder (a -> b) -> JD.Decoder b
+requiredWithoutDefault name decoder d =
+    field (JD.field name decoder) d
+
+requiredFieldEncoderWithoutDefault : String -> (a -> JE.Value) -> a -> Maybe ( String, JE.Value )
+requiredFieldEncoderWithoutDefault name encoder v =
+    Just ( name, encoder v )
+
 
 type alias Bar =
     { field : Bool -- 1
@@ -56,7 +64,7 @@ fooEncoder v =
 
 type alias Foo_StringToBarsEntry =
     { key : String -- 1
-    , value : Maybe Bar -- 2
+    , value : Bar -- 2
     }
 
 
@@ -64,14 +72,14 @@ foo_StringToBarsEntryDecoder : JD.Decoder Foo_StringToBarsEntry
 foo_StringToBarsEntryDecoder =
     JD.lazy <| \_ -> decode Foo_StringToBarsEntry
         |> required "key" JD.string ""
-        |> optional "value" barDecoder
+        |> requiredWithoutDefault "value" barDecoder
 
 
 foo_StringToBarsEntryEncoder : Foo_StringToBarsEntry -> JE.Value
 foo_StringToBarsEntryEncoder v =
     JE.object <| List.filterMap identity <|
         [ (requiredFieldEncoder "key" JE.string "" v.key)
-        , (optionalEncoder "value" barEncoder v.value)
+        , (requiredFieldEncoderWithoutDefault "value" barEncoder v.value)
         ]
 
 

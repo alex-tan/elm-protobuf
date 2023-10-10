@@ -138,6 +138,16 @@ func FieldJSONName(pb *descriptorpb.FieldDescriptorProto) VariantJSONName {
 }
 
 func RequiredFieldEncoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldEncoder {
+	_, isWellKnownType := WellKnownTypeMap[pb.GetTypeName()]
+
+	if pb.GetType() == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE && !isWellKnownType {
+		return FieldEncoder(fmt.Sprintf(
+			"requiredFieldEncoderWithoutDefault \"%s\" %s v.%s",
+			FieldJSONName(pb),
+			BasicFieldEncoder(parentName, pb),
+			FieldName(pb.GetName()),
+		))
+	}
 	return FieldEncoder(fmt.Sprintf(
 		"requiredFieldEncoder \"%s\" %s %s v.%s",
 		FieldJSONName(pb),
@@ -148,6 +158,15 @@ func RequiredFieldEncoder(parentName *string, pb *descriptorpb.FieldDescriptorPr
 }
 
 func RequiredFieldDecoder(parentName *string, pb *descriptorpb.FieldDescriptorProto) FieldDecoder {
+	_, isWellKnownType := WellKnownTypeMap[pb.GetTypeName()]
+
+	if pb.GetType() == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE && !isWellKnownType {
+		return FieldDecoder(fmt.Sprintf(
+			"requiredWithoutDefault \"%s\" %s",
+			FieldJSONName(pb),
+			BasicFieldDecoder(parentName, pb),
+		))
+	}
 	return FieldDecoder(fmt.Sprintf(
 		"required \"%s\" %s %s",
 		FieldJSONName(pb),

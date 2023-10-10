@@ -14,6 +14,14 @@ import Ids
 
 uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 
+requiredWithoutDefault : String -> JD.Decoder a -> JD.Decoder (a -> b) -> JD.Decoder b
+requiredWithoutDefault name decoder d =
+    field (JD.field name decoder) d
+
+requiredFieldEncoderWithoutDefault : String -> (a -> JE.Value) -> a -> Maybe ( String, JE.Value )
+requiredFieldEncoderWithoutDefault name encoder v =
+    Just ( name, encoder v )
+
 
 type alias ImportedCarrierss =
     { id : Ids.ImportedCarrierss -- 1

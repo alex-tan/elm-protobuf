@@ -13,6 +13,14 @@ import Json.Encode as JE
 
 uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 
+requiredWithoutDefault : String -> JD.Decoder a -> JD.Decoder (a -> b) -> JD.Decoder b
+requiredWithoutDefault name decoder d =
+    field (JD.field name decoder) d
+
+requiredFieldEncoderWithoutDefault : String -> (a -> JE.Value) -> a -> Maybe ( String, JE.Value )
+requiredFieldEncoderWithoutDefault name encoder v =
+    Just ( name, encoder v )
+
 
 type Enum
     = EnumValueDefault -- 0
@@ -103,10 +111,10 @@ type alias Foo =
     , boolField : Bool -- 13
     , stringField : String -- 14
     , enumField : Enum -- 15
-    , subMessage : Maybe SubMessage -- 16
+    , subMessage : SubMessage -- 16
     , repeatedInt64Field : List Int -- 17
     , repeatedEnumField : List Enum -- 18
-    , nestedMessageField : Maybe Foo_NestedMessage -- 19
+    , nestedMessageField : Foo_NestedMessage -- 19
     , nestedEnumField : Foo_NestedEnum -- 20
     }
 
@@ -129,10 +137,10 @@ fooDecoder =
         |> required "boolField" JD.bool False
         |> required "stringField" JD.string ""
         |> required "enumField" enumDecoder enumDefault
-        |> optional "subMessage" subMessageDecoder
+        |> requiredWithoutDefault "subMessage" subMessageDecoder
         |> repeated "repeatedInt64Field" intDecoder
         |> repeated "repeatedEnumField" enumDecoder
-        |> optional "nestedMessageField" foo_NestedMessageDecoder
+        |> requiredWithoutDefault "nestedMessageField" foo_NestedMessageDecoder
         |> required "nestedEnumField" foo_NestedEnumDecoder foo_NestedEnumDefault
 
 
@@ -154,10 +162,10 @@ fooEncoder v =
         , (requiredFieldEncoder "boolField" JE.bool False v.boolField)
         , (requiredFieldEncoder "stringField" JE.string "" v.stringField)
         , (requiredFieldEncoder "enumField" enumEncoder enumDefault v.enumField)
-        , (optionalEncoder "subMessage" subMessageEncoder v.subMessage)
+        , (requiredFieldEncoderWithoutDefault "subMessage" subMessageEncoder v.subMessage)
         , (repeatedFieldEncoder "repeatedInt64Field" numericStringEncoder v.repeatedInt64Field)
         , (repeatedFieldEncoder "repeatedEnumField" enumEncoder v.repeatedEnumField)
-        , (optionalEncoder "nestedMessageField" foo_NestedMessageEncoder v.nestedMessageField)
+        , (requiredFieldEncoderWithoutDefault "nestedMessageField" foo_NestedMessageEncoder v.nestedMessageField)
         , (requiredFieldEncoder "nestedEnumField" foo_NestedEnumEncoder foo_NestedEnumDefault v.nestedEnumField)
         ]
 

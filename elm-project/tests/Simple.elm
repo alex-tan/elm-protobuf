@@ -17,6 +17,14 @@ import Other exposing (..)
 
 uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 
+requiredWithoutDefault : String -> JD.Decoder a -> JD.Decoder (a -> b) -> JD.Decoder b
+requiredWithoutDefault name decoder d =
+    field (JD.field name decoder) d
+
+requiredFieldEncoderWithoutDefault : String -> (a -> JE.Value) -> a -> Maybe ( String, JE.Value )
+requiredFieldEncoderWithoutDefault name encoder v =
+    Just ( name, encoder v )
+
 
 type Colour
     = ColourUnspecified -- 0
@@ -107,53 +115,53 @@ simpleEncoder v =
 
 
 type alias Foo =
-    { s : Maybe Simple -- 1
+    { s : Simple -- 1
     , ss : List Simple -- 2
     , colour : Colour -- 3
     , colours : List Colour -- 4
     , singleIntField : Int -- 5
     , repeatedIntField : List Int -- 6
     , bytesField : Bytes -- 9
-    , stringValueField : Maybe String -- 10
-    , otherField : Maybe Other -- 11
-    , otherDirField : Maybe OtherDir -- 12
-    , timestampField : Maybe Timestamp -- 13
     , oo : Foo_Oo
+    , stringValueField : Maybe String
+    , otherField : Maybe Other
+    , otherDirField : Maybe OtherDir
+    , timestampField : Maybe Timestamp
     }
 
 
 fooDecoder : JD.Decoder Foo
 fooDecoder =
     JD.lazy <| \_ -> decode Foo
-        |> optional "s" simpleDecoder
+        |> requiredWithoutDefault "s" simpleDecoder
         |> repeated "ss" simpleDecoder
         |> required "colour" colourDecoder colourDefault
         |> repeated "colours" colourDecoder
         |> required "singleIntField" intDecoder 0
         |> repeated "repeatedIntField" intDecoder
         |> required "bytesField" bytesFieldDecoder []
+        |> field foo_OoDecoder
         |> optional "stringValueField" stringValueDecoder
         |> optional "otherField" otherDecoder
         |> optional "otherDirField" otherDirDecoder
         |> optional "timestampField" timestampDecoder
-        |> field foo_OoDecoder
 
 
 fooEncoder : Foo -> JE.Value
 fooEncoder v =
     JE.object <| List.filterMap identity <|
-        [ (optionalEncoder "s" simpleEncoder v.s)
+        [ (requiredFieldEncoderWithoutDefault "s" simpleEncoder v.s)
         , (repeatedFieldEncoder "ss" simpleEncoder v.ss)
         , (requiredFieldEncoder "colour" colourEncoder colourDefault v.colour)
         , (repeatedFieldEncoder "colours" colourEncoder v.colours)
         , (requiredFieldEncoder "singleIntField" JE.int 0 v.singleIntField)
         , (repeatedFieldEncoder "repeatedIntField" JE.int v.repeatedIntField)
         , (requiredFieldEncoder "bytesField" bytesFieldEncoder [] v.bytesField)
+        , (foo_OoEncoder v.oo)
         , (optionalEncoder "stringValueField" stringValueEncoder v.stringValueField)
         , (optionalEncoder "otherField" otherEncoder v.otherField)
         , (optionalEncoder "otherDirField" otherDirEncoder v.otherDirField)
         , (optionalEncoder "timestampField" timestampEncoder v.timestampField)
-        , (foo_OoEncoder v.oo)
         ]
 
 

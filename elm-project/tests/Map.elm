@@ -14,6 +14,14 @@ import Dict
 
 uselessDeclarationToPreventErrorDueToEmptyOutputFile = 42
 
+requiredWithoutDefault : String -> JD.Decoder a -> JD.Decoder (a -> b) -> JD.Decoder b
+requiredWithoutDefault name decoder d =
+    field (JD.field name decoder) d
+
+requiredFieldEncoderWithoutDefault : String -> (a -> JE.Value) -> a -> Maybe ( String, JE.Value )
+requiredFieldEncoderWithoutDefault name encoder v =
+    Just ( name, encoder v )
+
 
 type alias MapValue =
     { field : Bool -- 1
@@ -56,7 +64,7 @@ messageWithMapsEncoder v =
 
 type alias MessageWithMaps_StringToMessagesEntry =
     { key : String -- 1
-    , value : Maybe MapValue -- 2
+    , value : MapValue -- 2
     }
 
 
@@ -64,14 +72,14 @@ messageWithMaps_StringToMessagesEntryDecoder : JD.Decoder MessageWithMaps_String
 messageWithMaps_StringToMessagesEntryDecoder =
     JD.lazy <| \_ -> decode MessageWithMaps_StringToMessagesEntry
         |> required "key" JD.string ""
-        |> optional "value" mapValueDecoder
+        |> requiredWithoutDefault "value" mapValueDecoder
 
 
 messageWithMaps_StringToMessagesEntryEncoder : MessageWithMaps_StringToMessagesEntry -> JE.Value
 messageWithMaps_StringToMessagesEntryEncoder v =
     JE.object <| List.filterMap identity <|
         [ (requiredFieldEncoder "key" JE.string "" v.key)
-        , (optionalEncoder "value" mapValueEncoder v.value)
+        , (requiredFieldEncoderWithoutDefault "value" mapValueEncoder v.value)
         ]
 
 
