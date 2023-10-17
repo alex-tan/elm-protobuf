@@ -1,8 +1,16 @@
 /*
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+The output from generators of this need to be fed back into the generators.
 
+
+For elm:
+
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 protoc --go_out=. --proto_path=./forwardextensions forwardextensions.proto
-cp % test-diffs/forward/input/
+
+
+For rbi:
+
+Copy pkg/forwardextensions/forwardextensions.pb.go from the elm repo into protoc-gen-rbi repo
 */
 
 import "google/protobuf/descriptor.proto";
@@ -21,3 +29,6 @@ extend google.protobuf.MessageOptions {
   optional bool singleton = 50002;
 }
 
+extend google.protobuf.MethodOptions {
+  optional bool unauthenticated = 50003;
+}

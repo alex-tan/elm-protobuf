@@ -48,3 +48,8 @@ message MessageWithForeignKeyId {
 
   repeated string my_entity_ids = 2;
 }
+
+
+service MyService {
+  rpc ThisIsMyRpc(MyEntity) returns (MyChildEntity);
+}

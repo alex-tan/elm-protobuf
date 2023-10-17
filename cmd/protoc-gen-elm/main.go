@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/thematthopkins/elm-protobuf/pkg/api"
 	"github.com/thematthopkins/elm-protobuf/pkg/elmpb"
 	"github.com/thematthopkins/elm-protobuf/pkg/forwardcache"
 	"github.com/thematthopkins/elm-protobuf/pkg/forwardgraph"
@@ -101,6 +102,14 @@ func main() {
 			file, err := forwardids.Generate(inFile, messages)
 			if err != nil {
 				log.Fatalf("Could not template forwardids: %v", err)
+			}
+
+			resp.File = append(resp.File, file)
+		}
+		if parameters.GenerateApi {
+			file, err := api.Generate(inFile)
+			if err != nil {
+				log.Fatalf("Could not template api: %v", err)
 			}
 
 			resp.File = append(resp.File, file)

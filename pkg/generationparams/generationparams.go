@@ -12,6 +12,7 @@ type Parameters struct {
 	GenerateForwardCache bool
 	GenerateForwardGraph bool
 	GenerateForwardIds   bool
+	GenerateApi          bool
 }
 
 func ParseParameters(input *string) (Parameters, error) {
@@ -34,6 +35,8 @@ func ParseParameters(input *string) (Parameters, error) {
 			result.GenerateForwardIds = true
 		case "generate-forward-graph":
 			result.GenerateForwardGraph = true
+		case "generate-api":
+			result.GenerateApi = true
 		default:
 			err = fmt.Errorf("unknown parameter: \"%s\"", i)
 		}

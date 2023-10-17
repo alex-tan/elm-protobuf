@@ -26,7 +26,7 @@ for TEST in "${TEST_ROOT}"/*/; do
           --proto_path="${INPUT_DIR}" \
           --plugin=protoc-gen-elm="${ELM_PLUGIN}" \
           --elm_out="${OUTPUT_DIR}" \
-          --elm_opt="remove-deprecated,generate-forward-cache,generate-forward-ids,generate-forward-graph" \
+          --elm_opt="remove-deprecated,generate-forward-cache,generate-forward-ids,generate-forward-graph,generate-api" \
           --experimental_allow_proto3_optional \
           "${INPUT_DIR}"/*.proto
     else
@@ -52,7 +52,7 @@ protoc \
     --proto_path=../wallet/lib/frontend/ \
     --plugin=protoc-gen-elm="${ELM_PLUGIN}" \
     --elm_out=..//wallet/client/elm/app/src/ \
-    --elm_opt="remove-deprecated,generate-forward-cache,generate-forward-ids,generate-forward-graph" \
+    --elm_opt="remove-deprecated,generate-forward-cache,generate-forward-ids,generate-forward-graph,generate-api" \
     --experimental_allow_proto3_optional \
     frontend.proto
 
