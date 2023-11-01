@@ -5,8 +5,8 @@ module Api exposing (..)
 -- source file: forward.proto
 
 import Forward
+import ForwardNew.PostRequestState as PostRequestState exposing (PostRequest)
 import Helpers.Api
-import Helpers.Api.Result exposing (ApiResult)
 import HubTran.Effect as Effect
 import HubTran.Flash as Flash
 import Json.Decode
@@ -23,16 +23,16 @@ defaultServerErrorHandler error =
     Effect.flash Flash.defaultServerErrorAlert
 
 
-request : String -> value -> (value -> Json.Encode.Value) -> Json.Decode.Decoder a -> Effect.Effect (ApiResult String a)
+request : String -> value -> (value -> Json.Encode.Value) -> Json.Decode.Decoder a -> PostRequest String a
 request path value encoder decoder =
     Helpers.Api.post path
         (encoder value)
         decoder
         |> Forward.sendWithError identity
+        |> PostRequestState.fromEffect
 
 
-
-myServiceThisIsMyRpc : MyPackage.MyEntity -> Effect.Effect (ApiResult String MyPackage.MyChildEntity)
+myServiceThisIsMyRpc : MyPackage.MyEntity -> PostRequest String MyPackage.MyChildEntity
 myServiceThisIsMyRpc p =
     request "/my_service/this_is_my_rpc"
         p
