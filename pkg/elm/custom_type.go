@@ -107,18 +107,19 @@ type {{ .Name }}
 {{ .DefaultVariantVariable }} = {{ .DefaultVariantValue }}
 
 
-{{ .ToString }} : {{ .Name }} -> JE.Value
+{{ .ToString }} : {{ .Name }} -> String
 {{ .ToString }} v =
-		case v of
+    case v of
 {{- range .Variants }}
-			{{ .Name }} ->
-					"{{ .JSONName }}"
+        {{ .Name }} ->
+            "{{ .JSONName }}"
 {{ end }}
 
 
 {{ .Encoder }} : {{ .Name }} -> JE.Value
 {{ .Encoder }} =
-	JE.string << {{ .ToString }}
+    JE.string << {{ .ToString }}
+{{- end -}}
 `)
 }
 
