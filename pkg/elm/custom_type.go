@@ -109,10 +109,10 @@ type {{ .Name }}
 
 {{ .ToString }} : {{ .Name }} -> JE.Value
 {{ .ToString }} v =
-		case s of
+		case v of
 {{- range .Variants }}
-{{ .Name }} ->
-		"{{ .JSONName }}"
+			{{ .Name }} ->
+					"{{ .JSONName }}"
 {{ end }}
 
 
