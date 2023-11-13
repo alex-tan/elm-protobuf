@@ -110,9 +110,13 @@ type {{ .Name }}
 
 {{ .All }} : List {{ .Name }}
 {{ .All }} =
-{{- range $i, $v := .Variants }}
-  {{- if eq $i 0 -}}[{{ else }},{{ end }} {{ .Name }}
+{{- range $i, $v := .Variants -}}
+{{- if eq $i 0 }}
+  [ {{ .Name }}
+{{- else }}
+  , {{ .Name }}
 {{- end -}}
+{{- end }}
   ]
 
 {{ .Dict }} : Dict String {{ .Name }}

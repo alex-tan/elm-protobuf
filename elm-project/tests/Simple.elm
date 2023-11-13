@@ -59,7 +59,12 @@ colourToString v =
 
 
 allColour : List Colour
-allColour =[ ColourUnspecified, Red, Green, Blue]
+allColour =
+  [ ColourUnspecified
+  , Red
+  , Green
+  , Blue
+  ]
 
 colourDict : Dict String Colour
 colourDict =

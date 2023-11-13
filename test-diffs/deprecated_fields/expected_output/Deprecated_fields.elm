@@ -47,7 +47,10 @@ enumBarToString v =
 
 
 allEnumBar : List EnumBar
-allEnumBar =[ EnumbarValueDefault, EnumbarValue1]
+allEnumBar =
+  [ EnumbarValueDefault
+  , EnumbarValue1
+  ]
 
 enumBarDict : Dict String EnumBar
 enumBarDict =
