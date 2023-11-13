@@ -33,6 +33,11 @@ type VariantJSONName string
 // Used only for commentsin Elm code generation
 type ProtobufFieldNumber int32
 
+// ToStringName - the function used to convert to a string
+func ToStringName(t Type) VariableName {
+	return VariableName(stringextras.FirstLower(fmt.Sprintf("%sToString", t)))
+}
+
 // DecoderName - decoder function name for Elm type
 func DecoderName(t Type) VariableName {
 	return VariableName(stringextras.FirstLower(fmt.Sprintf("%sDecoder", t)))
