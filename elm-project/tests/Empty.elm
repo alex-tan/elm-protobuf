@@ -6,7 +6,7 @@ module Empty exposing (..)
 -- source file: empty.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 

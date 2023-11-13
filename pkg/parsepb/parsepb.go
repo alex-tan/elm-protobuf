@@ -87,7 +87,10 @@ func EnumsToCustomTypes(preface []string, enumPbs []*descriptorpb.EnumDescriptor
 
 		result = append(result, elm.EnumCustomType{
 			Name:                   enumType,
+			Dict:                   elm.DictName(enumType),
+			All:                    elm.AllName(enumType),
 			ToString:               elm.ToStringName(enumType),
+			FromString:             elm.FromStringName(enumType),
 			Decoder:                elm.DecoderName(enumType),
 			Encoder:                elm.EncoderName(enumType),
 			DefaultVariantVariable: elm.EnumDefaultVariantVariableName(enumType),

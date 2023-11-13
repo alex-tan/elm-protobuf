@@ -35,9 +35,24 @@ type VariantJSONName string
 // Used only for commentsin Elm code generation
 type ProtobufFieldNumber int32
 
+// DictName - variable name for the dictionary of String to enum type constructor
+func DictName(t Type) VariableName {
+	return VariableName(stringextras.FirstLower(fmt.Sprintf("%sDict", t)))
+}
+
+// AllName - variable name for the list of all variations of the enum
+func AllName(t Type) VariableName {
+	return VariableName(fmt.Sprintf("all%s", t))
+}
+
 // ToStringName - the function used to convert to a string
 func ToStringName(t Type) VariableName {
 	return VariableName(stringextras.FirstLower(fmt.Sprintf("%sToString", t)))
+}
+
+// FromStringName - the function used to convert from a string
+func FromStringName(t Type) VariableName {
+	return VariableName(stringextras.FirstLower(fmt.Sprintf("%sFromString", t)))
 }
 
 // DecoderName - decoder function name for Elm type

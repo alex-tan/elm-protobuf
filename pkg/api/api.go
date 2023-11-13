@@ -3,14 +3,15 @@ package api
 import (
 	"bytes"
 	"fmt"
+	"strings"
+	"text/template"
+
 	pgs "github.com/lyft/protoc-gen-star"
 	"github.com/thematthopkins/elm-protobuf/pkg/elm"
 	"github.com/thematthopkins/elm-protobuf/pkg/elmpb"
 	"github.com/thematthopkins/elm-protobuf/pkg/stringextras"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
-	"strings"
-	"text/template"
 )
 
 func Generate(inFile *descriptorpb.FileDescriptorProto) (*pluginpb.CodeGeneratorResponse_File, error) {

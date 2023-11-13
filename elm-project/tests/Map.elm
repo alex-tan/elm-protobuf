@@ -6,7 +6,7 @@ module Map exposing (..)
 -- source file: map.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Dict

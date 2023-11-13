@@ -6,7 +6,7 @@ module Deprecated_fields exposing (..)
 -- source file: deprecated_fields.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 
@@ -29,38 +29,40 @@ type EnumBar
 
 enumBarDecoder : JD.Decoder EnumBar
 enumBarDecoder =
-    let
-        lookup s =
-            case s of
-                "ENUMBAR_VALUE_DEFAULT" ->
-                    EnumbarValueDefault
-
-                "ENUMBAR_VALUE_1" ->
-                    EnumbarValue1
-
-                _ ->
-                    EnumbarValueDefault
-    in
-        JD.map lookup JD.string
+    JD.map (Maybe.withDefault enumBarDefault << enumBarFromString) JD.string
 
 
 enumBarDefault : EnumBar
 enumBarDefault = EnumbarValueDefault
 
 
+enumBarToString : EnumBar -> String
+enumBarToString v =
+    case v of
+        EnumbarValueDefault ->
+            "ENUMBAR_VALUE_DEFAULT"
+
+        EnumbarValue1 ->
+            "ENUMBAR_VALUE_1"
+
+
+allEnumBar : List EnumBar
+allEnumBar =[ EnumbarValueDefault, EnumbarValue1]
+
+enumBarDict : Dict String EnumBar
+enumBarDict =
+    Dict.fromList <|
+        List.map
+            (\v -> ( enumBarToString v, v ))
+            allEnumBar
+
+enumBarFromString : String -> Maybe EnumBar
+enumBarFromString s =
+    Dict.get s enumBarDict
+
 enumBarEncoder : EnumBar -> JE.Value
-enumBarEncoder v =
-    let
-        lookup s =
-            case s of
-                EnumbarValueDefault ->
-                    "ENUMBAR_VALUE_DEFAULT"
-
-                EnumbarValue1 ->
-                    "ENUMBAR_VALUE_1"
-
-    in
-        JE.string <| lookup v
+enumBarEncoder =
+    JE.string << enumBarToString
 
 
 type alias Bar =

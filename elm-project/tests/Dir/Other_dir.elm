@@ -6,7 +6,7 @@ module Dir.Other_dir exposing (..)
 -- source file: dir/other_dir.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 

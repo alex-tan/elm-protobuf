@@ -6,7 +6,7 @@ module Recursive exposing (..)
 -- source file: recursive.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 

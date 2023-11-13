@@ -2,10 +2,11 @@ package elmpb
 
 import (
 	"bytes"
-	"google.golang.org/protobuf/types/pluginpb"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/thematthopkins/elm-protobuf/pkg/forwardextensions"
 	"github.com/thematthopkins/elm-protobuf/pkg/generationparams"
@@ -77,7 +78,7 @@ func Generate(inFile *descriptorpb.FileDescriptorProto, p generationparams.Param
 -- source file: {{ .SourceFile }}
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 {{- if .ImportDict }}

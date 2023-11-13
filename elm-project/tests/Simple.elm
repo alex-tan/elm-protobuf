@@ -6,7 +6,7 @@ module Simple exposing (..)
 -- source file: simple.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Dir.Other_dir exposing (..)
@@ -35,25 +35,7 @@ type Colour
 
 colourDecoder : JD.Decoder Colour
 colourDecoder =
-    let
-        lookup s =
-            case s of
-                "COLOUR_UNSPECIFIED" ->
-                    ColourUnspecified
-
-                "RED" ->
-                    Red
-
-                "GREEN" ->
-                    Green
-
-                "BLUE" ->
-                    Blue
-
-                _ ->
-                    ColourUnspecified
-    in
-        JD.map lookup JD.string
+    JD.map (Maybe.withDefault colourDefault << colourFromString) JD.string
 
 
 colourDefault : Colour
@@ -76,6 +58,19 @@ colourToString v =
             "BLUE"
 
 
+allColour : List Colour
+allColour =[ ColourUnspecified, Red, Green, Blue]
+
+colourDict : Dict String Colour
+colourDict =
+    Dict.fromList <|
+        List.map
+            (\v -> ( colourToString v, v ))
+            allColour
+
+colourFromString : String -> Maybe Colour
+colourFromString s =
+    Dict.get s colourDict
 
 colourEncoder : Colour -> JE.Value
 colourEncoder =

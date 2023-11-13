@@ -6,7 +6,7 @@ module MyPackage exposing (..)
 -- source file: forward.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 import Ids

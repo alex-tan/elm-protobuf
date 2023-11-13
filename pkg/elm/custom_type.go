@@ -14,6 +14,9 @@ import (
 // https://guide.elm-lang.org/types/custom_types.html
 type EnumCustomType struct {
 	Name                   Type
+	Dict                   VariableName
+	All                    VariableName
+	FromString             VariableName
 	ToString               VariableName
 	Decoder                VariableName
 	Encoder                VariableName
@@ -90,17 +93,7 @@ type {{ .Name }}
 
 {{ .Decoder }} : JD.Decoder {{ .Name }}
 {{ .Decoder }} =
-    let
-        lookup s =
-            case s of
-{{- range .Variants }}
-                "{{ .JSONName }}" ->
-                    {{ .Name }}
-{{ end }}
-                _ ->
-                    {{ .DefaultVariantValue }}
-    in
-        JD.map lookup JD.string
+    JD.map (Maybe.withDefault {{ .DefaultVariantVariable }} << {{ .FromString }}) JD.string
 
 
 {{ .DefaultVariantVariable }} : {{ .Name }}
@@ -115,6 +108,23 @@ type {{ .Name }}
             "{{ .JSONName }}"
 {{ end }}
 
+{{ .All }} : List {{ .Name }}
+{{ .All }} =
+{{- range $i, $v := .Variants }}
+  {{- if eq $i 0 -}}[{{ else }},{{ end }} {{ .Name }}
+{{- end -}}
+  ]
+
+{{ .Dict }} : Dict String {{ .Name }}
+{{ .Dict }} =
+    Dict.fromList <|
+        List.map
+            (\v -> ( {{ .ToString }} v, v ))
+            {{ .All }}
+
+{{ .FromString }} : String -> Maybe {{ .Name }}
+{{ .FromString }} s =
+    Dict.get s {{ .Dict }}
 
 {{ .Encoder }} : {{ .Name }} -> JE.Value
 {{ .Encoder }} =

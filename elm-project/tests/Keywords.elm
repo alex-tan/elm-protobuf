@@ -6,7 +6,7 @@ module Keywords exposing (..)
 -- source file: keywords.proto
 
 import Protobuf exposing (..)
-
+import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Encode as JE
 
