@@ -4,18 +4,20 @@ on:
   push:
     branches:
       - master
+      - forward
 
   pull_request:
     branches:
       - master
+      - forward
 
 jobs:
   test:
     name: Run tests
     strategy:
       matrix:
-        go-version: [ 1.13.x, 1.14.x, 1.15.x, 1.16.x ]
-        platform: [ ubuntu-latest ]
+        go-version: [1.13.x, 1.14.x, 1.15.x, 1.16.x]
+        platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     env:
       LB_LIBRARY_PATH: ${HOME}/.local/include

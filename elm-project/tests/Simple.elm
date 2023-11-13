@@ -60,25 +60,26 @@ colourDefault : Colour
 colourDefault = ColourUnspecified
 
 
+colourToString : Colour -> String
+colourToString v =
+    case v of
+        ColourUnspecified ->
+            "COLOUR_UNSPECIFIED"
+
+        Red ->
+            "RED"
+
+        Green ->
+            "GREEN"
+
+        Blue ->
+            "BLUE"
+
+
+
 colourEncoder : Colour -> JE.Value
-colourEncoder v =
-    let
-        lookup s =
-            case s of
-                ColourUnspecified ->
-                    "COLOUR_UNSPECIFIED"
-
-                Red ->
-                    "RED"
-
-                Green ->
-                    "GREEN"
-
-                Blue ->
-                    "BLUE"
-
-    in
-        JE.string <| lookup v
+colourEncoder =
+    JE.string << colourToString
 
 
 type alias Empty =

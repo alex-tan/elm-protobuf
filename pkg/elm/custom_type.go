@@ -14,6 +14,7 @@ import (
 // https://guide.elm-lang.org/types/custom_types.html
 type EnumCustomType struct {
 	Name                   Type
+	ToString               VariableName
 	Decoder                VariableName
 	Encoder                VariableName
 	DefaultVariantVariable VariableName
@@ -106,17 +107,18 @@ type {{ .Name }}
 {{ .DefaultVariantVariable }} = {{ .DefaultVariantValue }}
 
 
-{{ .Encoder }} : {{ .Name }} -> JE.Value
-{{ .Encoder }} v =
-    let
-        lookup s =
-            case s of
+{{ .ToString }} : {{ .Name }} -> String
+{{ .ToString }} v =
+    case v of
 {{- range .Variants }}
-                {{ .Name }} ->
-                    "{{ .JSONName }}"
+        {{ .Name }} ->
+            "{{ .JSONName }}"
 {{ end }}
-    in
-        JE.string <| lookup v
+
+
+{{ .Encoder }} : {{ .Name }} -> JE.Value
+{{ .Encoder }} =
+    JE.string << {{ .ToString }}
 {{- end -}}
 `)
 }
